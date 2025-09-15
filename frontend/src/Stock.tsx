@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 
 interface Product {
-  displayName: string;
-  number: string;
-  itemCategoryCode: string;
+  id: string;       // id de BC que usamos en la DB
+  name: string;
+  category: string;
+  stock: number;
 }
 
 function Stock() {
@@ -11,12 +12,12 @@ function Stock() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/products")
+    setLoading(true);
+    fetch("http://localhost:4000/api/products-db")
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-        const allProducts: Product[] = data.products.flat();
-        setProducts(allProducts);
+        console.log(data); // data es un array de productos desde Postgres
+        setProducts(data);
         setLoading(false);
       })
       .catch((err) => {
@@ -27,7 +28,6 @@ function Stock() {
 
   return (
     <div className="container-1">
-
       <h1>Stock - WMS PREMIUM DELEVENT</h1>
 
       {loading ? (
@@ -57,19 +57,19 @@ function Stock() {
         <table border={1} cellPadding={5} cellSpacing={0}>
           <thead>
             <tr>
-              <th>Display Name</th>
-              <th>Number</th>
+              <th>ID</th>
+              <th>Name</th>
               <th>Category</th>
               <th>Stock</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product, index) => (
-              <tr key={index}>
-                <td>{product.displayName}</td>
-                <td>{product.number}</td>
-                <td>{product.itemCategoryCode}</td>
-                <td>0</td>
+            {products.map((product) => (
+              <tr key={product.id}>
+                <td>{product.id}</td>
+                <td>{product.name}</td>
+                <td>{product.category}</td>
+                <td>{product.stock}</td>
               </tr>
             ))}
           </tbody>
