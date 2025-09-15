@@ -7,13 +7,13 @@ function App() {
   return (
     <>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={premiumLogo} className="logo" alt="Vite logo" />
+        <a href="" target="_blank">
+          <img src={premiumLogo} className="logo" alt="Premium Logo" />
         </a>
       </div>
       <h1>WMS PREMIUM</h1>
       <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+        Warehouse Management System - PREMIUM
       </p>
     </>
   )
