@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface SalesLine {
   Location_Code: string;
@@ -11,7 +10,6 @@ interface SalesLine {
 function Intercambios() {
   const [salesLines, setSalesLines] = useState<SalesLine[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:4000/api/sales-lines")
@@ -30,20 +28,6 @@ function Intercambios() {
 
   return (
     <div className="container-1">
-      <button
-        onClick={() => navigate("/")}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: "#6c757d",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          fontSize: "14px",
-        }}
-      >
-        ← Volver al inicio
-      </button>
 
       <h1>Intercambios - WMS PREMIUM DELEVENT</h1>
 

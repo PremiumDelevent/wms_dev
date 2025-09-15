@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface Product {
   displayName: string;
@@ -10,7 +9,6 @@ interface Product {
 function Stock() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:4000/api/products")
@@ -29,20 +27,6 @@ function Stock() {
 
   return (
     <div className="container-1">
-      <button
-        onClick={() => navigate("/")}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: "#6c757d",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          fontSize: "14px",
-        }}
-      >
-        ← Volver al inicio
-      </button>
 
       <h1>Stock - WMS PREMIUM DELEVENT</h1>
 
