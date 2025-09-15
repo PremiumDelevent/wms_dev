@@ -104,6 +104,8 @@ app.get("/api/sales-lines", async (_req, res) => {
   res.json({ salesLines });
 });
 
+
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
