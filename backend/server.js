@@ -123,6 +123,16 @@ app.get("/api/products-db", async (_req, res) => {
   }
 });
 
+app.get("/api/intercambios-db", async (_req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM intercambios");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error obteniendo intercambios desde DB:", error.message);
+    res.status(500).json({ error: "Error obteniendo intercambios desde la base de datos" });
+  }
+});
+
 // =======================
 // Sincronización periódica
 // =======================
@@ -151,12 +161,47 @@ async function syncProductsToDb() {
   }
 }
 
+async function syncIntercambiosToDb() {
+  try {
+    console.log("🔄 Sincronizando intercambios desde BC a la DB...");
+    const bcIntercambios = await getBcSalesLines();
+
+    for (const p of bcIntercambios) {
+      // Ojo con las propiedades: revisa si es Document_No o documentNo
+      const documentNo = p.Document_No || p.documentNo || "SIN_DOC";
+      const description = p.Description || "";
+      const locationCode = p.Location_Code || "";
+      const shortcutDim = p.Shortcut_Dimension_1_Code || "";
+
+      await pool.query(
+        `
+        INSERT INTO intercambios (documentNo, description, location_code, shortcut_dimension_1_code)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (id)
+        DO UPDATE SET 
+          documentNo = EXCLUDED.documentNo,
+          description = EXCLUDED.description,
+          location_code = EXCLUDED.location_code,
+          shortcut_dimension_1_code = EXCLUDED.shortcut_dimension_1_code
+        `,
+        [documentNo, description, locationCode, shortcutDim]
+      );
+    }
+
+    console.log(`✅ Sincronización completada: ${bcIntercambios.length} intercambios`);
+  } catch (err) {
+    console.error("❌ Error sincronizando intercambios:", err.message);
+  }
+}
+
 // Ejecutar sincronización al arrancar
 syncProductsToDb();
+syncIntercambiosToDb();
 
 // Cron job: cada 30 minutos
 cron.schedule("*/30 * * * *", () => {
   syncProductsToDb();
+  syncIntercambiosToDb();
 });
 
 // =======================

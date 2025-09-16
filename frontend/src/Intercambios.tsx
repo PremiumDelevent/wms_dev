@@ -1,34 +1,33 @@
 import { useEffect, useState } from "react";
 
-interface SalesLine {
-  Location_Code: string;
-  Shortcut_Dimension_1_Code: string;
-  Document_No: string;
-  Description: string;
+interface Intercambio {
+  id: number;
+  documentno: string;
+  description: string;
+  location_code: string;
+  shortcut_dimension_1_code: string;
 }
 
 function Intercambios() {
-  const [salesLines, setSalesLines] = useState<SalesLine[]>([]);
+  const [intercambios, setIntercambios] = useState<Intercambio[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/sales-lines")
+    fetch("http://localhost:4000/api/intercambios-db")
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: Intercambio[]) => {
         console.log(data);
-        const allLines: SalesLine[] = data.salesLines.flat();
-        setSalesLines(allLines);
+        setIntercambios(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("❌ Error cargando intercambios:", err);
         setLoading(false);
       });
   }, []);
 
   return (
     <div className="container-1">
-
       <h1>Intercambios - WMS PREMIUM DELEVENT</h1>
 
       {loading ? (
@@ -58,6 +57,7 @@ function Intercambios() {
         <table border={1} cellPadding={5} cellSpacing={0}>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Location Code</th>
               <th>Shortcut Dimension 1 Code</th>
               <th>Document No</th>
@@ -65,18 +65,19 @@ function Intercambios() {
             </tr>
           </thead>
           <tbody>
-            {salesLines
+            {intercambios
               .filter(
                 (line) =>
-                  line.Location_Code.slice(2) !==
-                  line.Shortcut_Dimension_1_Code
+                  line.location_code?.slice(2) !==
+                  line.shortcut_dimension_1_code
               )
-              .map((line, index) => (
-                <tr key={index}>
-                  <td>{line.Location_Code}</td>
-                  <td>{line.Shortcut_Dimension_1_Code}</td>
-                  <td>{line.Document_No}</td>
-                  <td>{line.Description}</td>
+              .map((line) => (
+                <tr key={line.id}>
+                  <td>{line.id}</td>
+                  <td>{line.location_code}</td>
+                  <td>{line.shortcut_dimension_1_code}</td>
+                  <td>{line.documentno}</td>
+                  <td>{line.description}</td>
                 </tr>
               ))}
           </tbody>
