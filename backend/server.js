@@ -91,6 +91,23 @@ async function getBcSalesLines() {
   }
 }
 
+async function getBcAlbaranes() {
+  const token = await getBcAccessToken();
+  if (!token) return [];
+  const url = `https://api.businesscentral.dynamics.com/v2.0/3283f487-58a3-41e8-8fce-4b83155bc6f8/PRODUCTION/api/BDOSpain/laukatu/v1.0/companies(b78acfed-0a57-eb11-89fa-000d3a47e0e0)/LKSalesOrders?\$expand=lines`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      timeout: 60000,
+    });
+    return response.data.value || [];
+  } catch (error) {
+    console.error("❌ Error obteniendo albaranes:", error.response?.data || error.message);
+    return [];
+  }
+}
+
 // =======================
 // Middleware
 // =======================
@@ -111,6 +128,11 @@ app.get("/api/products", async (_req, res) => {
 app.get("/api/sales-lines", async (_req, res) => {
   const salesLines = await getBcSalesLines();
   res.json({ salesLines });
+});
+
+app.get("/api/albaranes", async (_req, res) => {
+  const albaranes = await getBcAlbaranes();
+  res.json({ albaranes });
 });
 
 app.get("/api/products-db", async (_req, res) => {
@@ -196,12 +218,12 @@ async function syncIntercambiosToDb() {
 
 // Ejecutar sincronización al arrancar
 syncProductsToDb();
-syncIntercambiosToDb();
+//syncIntercambiosToDb();
 
 // Cron job: cada 30 minutos
 cron.schedule("*/30 * * * *", () => {
   syncProductsToDb();
-  syncIntercambiosToDb();
+  //syncIntercambiosToDb();
 });
 
 // =======================
