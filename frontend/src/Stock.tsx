@@ -16,7 +16,7 @@ function Stock() {
     fetch("http://localhost:4000/api/products-db")
       .then((res) => res.json())
       .then((data) => {
-        console.log(data); // data es un array de productos desde Postgres
+        console.log("✅ Datos cargados al montar:", data);
         setProducts(data);
         setLoading(false);
       })
