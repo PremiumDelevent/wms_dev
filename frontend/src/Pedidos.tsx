@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+interface Linea {
+  description: string;
+  no: string;
+  quantity: number;
+}
+
 interface Pedido {
   No: string;
   SelltoCustomerName: string;
   furnitureLoadDateJMT: string;
   jmtStatus: string;
+  lines: Linea[];
 }
 
 function Pedidos() {
@@ -17,8 +24,8 @@ function Pedidos() {
     fetch("http://localhost:4000/api/albaranes")
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-        setPedidos(data.albaranes);
+        console.log("📦 Datos pedidos:", data);
+        setPedidos(data.albaranes); // 👈 asegúrate de que tu backend devuelve { albaranes: [...] }
         setLoading(false);
       })
       .catch((err) => {
@@ -54,8 +61,9 @@ function Pedidos() {
             <tr>
               <th>Número</th>
               <th>Cliente</th>
-              <th>Fecha</th>
+              <th>Fecha carga</th>
               <th>Estado</th>
+              <th>Artículos</th>
             </tr>
           </thead>
           <tbody>
@@ -65,6 +73,17 @@ function Pedidos() {
                 <td>{pedido.SelltoCustomerName}</td>
                 <td>{pedido.furnitureLoadDateJMT}</td>
                 <td>{pedido.jmtStatus}</td>
+                <td>
+                  {pedido.lines && pedido.lines.length > 0 ? (
+                    pedido.lines.map((linea, i) => (
+                      <div key={i}>
+                        {linea.no} - {linea.description} (x{linea.quantity})
+                      </div>
+                    ))
+                  ) : (
+                    <em>Sin artículos</em>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
