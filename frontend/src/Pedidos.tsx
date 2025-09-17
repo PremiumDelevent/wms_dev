@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface Linea {
-  description: string;
-  no: string;
+  id?: number;
+  num: string;
+  descr: string;
   quantity: number;
 }
 
 interface Pedido {
-  No: string;
-  SelltoCustomerName: string;
-  furnitureLoadDateJMT: string;
-  jmtStatus: string;
+  id: number;
+  num: string;
+  sellto_customer_name: string;
+  furniture_load_date_jmt: string | null;
+  jmt_status: string;
   lines: Linea[];
 }
 
@@ -21,18 +23,26 @@ function Pedidos() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/albaranes")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("📦 Datos pedidos:", data);
-        setPedidos(data.albaranes); // 👈 asegúrate de que tu backend devuelve { albaranes: [...] }
+    const fetchPedidos = async () => {
+        setLoading(true);
+        try {
+        const res = await fetch("http://localhost:4000/api/pedidos-db");
+        const data: Omit<Pedido, "lines">[] = await res.json(); // los pedidos vienen sin lines
+        setPedidos(
+            data.map((p) => ({
+            ...p,
+            lines: [] as Linea[], // agregamos lines vacío
+            }))
+        );
+        } catch (err) {
+        console.error("❌ Error cargando pedidos:", err);
+        } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
+        }
+    };
+
+    fetchPedidos();
+    }, []);
 
   return (
     <div className="container-1">
@@ -55,6 +65,8 @@ function Pedidos() {
 
       {loading ? (
         <p>Cargando pedidos...</p>
+      ) : pedidos.length === 0 ? (
+        <p>No hay pedidos disponibles.</p>
       ) : (
         <table border={1} cellPadding={5} cellSpacing={0}>
           <thead>
@@ -67,17 +79,21 @@ function Pedidos() {
             </tr>
           </thead>
           <tbody>
-            {pedidos.map((pedido, index) => (
-              <tr key={index}>
-                <td>{pedido.No}</td>
-                <td>{pedido.SelltoCustomerName}</td>
-                <td>{pedido.furnitureLoadDateJMT}</td>
-                <td>{pedido.jmtStatus}</td>
+            {pedidos.map((pedido) => (
+              <tr key={pedido.id}>
+                <td>{pedido.num}</td>
+                <td>{pedido.sellto_customer_name}</td>
                 <td>
-                  {pedido.lines && pedido.lines.length > 0 ? (
+                  {pedido.furniture_load_date_jmt
+                    ? new Date(pedido.furniture_load_date_jmt).toLocaleString()
+                    : "-"}
+                </td>
+                <td>{pedido.jmt_status}</td>
+                <td>
+                  {pedido.lines.length > 0 ? (
                     pedido.lines.map((linea, i) => (
                       <div key={i}>
-                        {linea.no} - {linea.description} (x{linea.quantity})
+                        {linea.num} - {linea.descr} (x{linea.quantity})
                       </div>
                     ))
                   ) : (

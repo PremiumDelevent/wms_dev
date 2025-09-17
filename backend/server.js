@@ -155,6 +155,28 @@ app.get("/api/intercambios-db", async (_req, res) => {
   }
 });
 
+app.get("/api/pedidos-db", async (_req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM orders");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error obteniendo pedidos desde DB:", error.message);
+    res.status(500).json({ error: "Error obteniendo pedidos desde la base de datos" });
+  }
+});
+
+app.get("/api/pedido-lines-db/:orderId", async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const result = await pool.query("SELECT * FROM order_lines WHERE pedido_id = $1", [orderId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error obteniendo líneas de pedido desde DB:", error.message);
+    res.status(500).json({ error: "Error obteniendo líneas de pedido desde la base de datos" });
+  }
+});
+
 // =======================
 // Sincronización periódica
 // =======================
@@ -216,14 +238,54 @@ async function syncIntercambiosToDb() {
   }
 }
 
+// =======================
+// Sincronización periódica solo pedidos (sin líneas)
+// =======================
+async function syncOrdersToDb() {
+  try {
+    console.log("🔄 Sincronizando pedidos desde BC a la DB (sin líneas)...");
+
+    const bcPedidos = await getBcAlbaranes(); // función que trae los pedidos de BC
+
+    for (const p of bcPedidos) {
+      const no = p.No || p.Document_No || p.documentNo || "SIN_DOC";
+      const customerName = p.SelltoCustomerName || "";
+      const furnitureLoadDate = p.furnitureLoadDateJMT
+        ? new Date(p.furnitureLoadDateJMT)
+        : null;
+      const jmtStatus = p.jmtStatus || "";
+
+      // Insertar pedido en la DB (sin procesar líneas)
+      await pool.query(
+        `
+        INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (num)
+        DO UPDATE SET
+          sellto_customer_name = EXCLUDED.sellto_customer_name,
+          furniture_load_date_jmt = EXCLUDED.furniture_load_date_jmt,
+          jmt_status = EXCLUDED.jmt_status
+        `,
+        [no, customerName, furnitureLoadDate, jmtStatus]
+      );
+    }
+
+    console.log(`✅ Sincronización completada: ${bcPedidos.length} pedidos`);
+  } catch (err) {
+    console.error("❌ Error sincronizando pedidos:", err.message);
+  }
+}
+
 // Ejecutar sincronización al arrancar
-syncProductsToDb();
+//syncProductsToDb();
 //syncIntercambiosToDb();
+syncOrdersToDb();
 
 // Cron job: cada 30 minutos
 cron.schedule("*/30 * * * *", () => {
-  syncProductsToDb();
+  //syncProductsToDb();
   //syncIntercambiosToDb();
+  syncOrdersToDb();
 });
 
 // =======================

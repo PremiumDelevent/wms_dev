@@ -72,6 +72,34 @@ CREATE TABLE products (
   category VARCHAR(255) NOT NULL,
   stock INT DEFAULT 0
 );
+
+CREATE TABLE intercambios (
+  id SERIAL PRIMARY KEY,                          -- id autoincremental local
+  documentNo VARCHAR(50) NOT NULL,                -- nº documento de BC      
+  description TEXT,
+  location_code VARCHAR(50),
+  shortcut_dimension_1_code VARCHAR(50)
+);
+
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,           -- ID interno del pedido
+    num VARCHAR(50) NOT NULL UNIQUE, -- Número de pedido (No)
+    sellto_customer_name VARCHAR(255) NOT NULL,
+    furniture_load_date_jmt TIMESTAMP,
+    jmt_status VARCHAR(50)
+);
+
+CREATE TABLE order_lines (
+    id SERIAL PRIMARY KEY,           -- ID interno de la línea
+    pedido_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE, -- relación con pedidos
+    num VARCHAR(50) NOT NULL,        -- número o código del artículo
+    descr VARCHAR(255),
+    quantity INT NOT NULL
+);
+
+ALTER TABLE order_lines ADD CONSTRAINT order_lines_unique_line UNIQUE (pedido_id, num);
+
+ALTER TABLE order_lines ALTER COLUMN quantity TYPE NUMERIC;
 ```
 
 ## 4️⃣ Sincronización de productos
