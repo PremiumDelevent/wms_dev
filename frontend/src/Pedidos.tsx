@@ -20,11 +20,46 @@ interface Pedido {
 interface PedidoPopupProps {
   pedido: Pedido | null;
   titulo: string;
+  tipoAccion: "ship" | "return";
   onClose: () => void;
 }
 
-function PedidoPopup({ pedido, titulo, onClose }: PedidoPopupProps) {
+function PedidoPopup({ pedido, titulo, tipoAccion, onClose }: PedidoPopupProps) {
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const [isError, setIsError] = useState<boolean>(false);
+  
   if (!pedido) return null;
+
+  const actualizarStock = async () => {
+    try {
+      const endpoint = tipoAccion === "ship" 
+        ? "http://localhost:4000/api/ship-order"
+        : "http://localhost:4000/api/return-order";
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pedidoId: pedido.id,
+          productos: pedido.lineas.map((linea) => ({
+            producto_id: linea.producto_id,
+            descripcion: linea.descripcion,
+            cantidad: linea.cantidad,
+          })),
+        }),
+      });
+      
+      const data = await res.json().catch(() => null);
+      
+      setIsError(!res.ok);
+      setMensaje(data?.message || (res.ok ? "✅ Stock actualizado correctamente" : "❌ Error actualizando stock"));
+      
+    } catch (err) {
+      console.error("❌ Error actualizando stock:", err);
+      setIsError(true);
+      setMensaje("❌ Error actualizando stock");
+    }
+  };
 
   return (
     <div
@@ -56,6 +91,7 @@ function PedidoPopup({ pedido, titulo, onClose }: PedidoPopupProps) {
         <h2>{titulo}</h2>
         <p><strong>Número:</strong> {pedido.num}</p>
         <p><strong>Cliente:</strong> {pedido.sellto_customer_name}</p>
+        <p><strong>Evento:</strong> {pedido.jmteventname}</p>
         <p>
           <strong>Fecha carga:</strong>{" "}
           {pedido.furniture_load_date_jmt
@@ -65,7 +101,7 @@ function PedidoPopup({ pedido, titulo, onClose }: PedidoPopupProps) {
         <p><strong>Estado:</strong> {pedido.jmt_status}</p>
 
         <h3>Artículos</h3>
-        {pedido.lineas && pedido.lineas.length > 0 ? (
+        {pedido.lineas?.length > 0 ? (
           <ul>
             {pedido.lineas.map((linea, i) => (
               <li key={i}>
@@ -76,6 +112,32 @@ function PedidoPopup({ pedido, titulo, onClose }: PedidoPopupProps) {
         ) : (
           <em>Sin artículos</em>
         )}
+
+        {/* Mensaje de resultado */}
+        {mensaje && (
+          <p style={{ 
+            color: isError ? "red" : "green", 
+            fontWeight: "bold" 
+          }}>
+            {mensaje}
+          </p>
+        )}
+
+        <button
+          onClick={actualizarStock}
+          style={{
+            marginTop: "20px",
+            padding: "8px 16px",
+            backgroundColor: "#28a745",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            marginRight: "10px",
+          }}
+        >
+          {tipoAccion === "ship" ? "Confirmar envío" : "Confirmar entrada"}
+        </button>
 
         <button
           onClick={onClose}
@@ -101,6 +163,7 @@ function Pedidos() {
   const [loading, setLoading] = useState<boolean>(true);
   const [popupPedido, setPopupPedido] = useState<Pedido | null>(null);
   const [popupTitulo, setPopupTitulo] = useState<string>("");
+  const [popupAccion, setPopupAccion] = useState<"ship" | "return">("ship");
 
   const navigate = useNavigate();
 
@@ -121,9 +184,10 @@ function Pedidos() {
     fetchPedidos();
   }, []);
 
-  const openPopup = (pedido: Pedido, titulo: string) => {
+  const openPopup = (pedido: Pedido, titulo: string, tipoAccion: "ship" | "return") => {
     setPopupPedido(pedido);
     setPopupTitulo(titulo);
+    setPopupAccion(tipoAccion);
   };
 
   const closePopup = () => {
@@ -180,13 +244,13 @@ function Pedidos() {
                 <td>{pedido.jmt_status}</td>
                 <td>
                   <button
-                    onClick={() => openPopup(pedido, "📦 Enviar pedido")}
+                    onClick={() => openPopup(pedido, "📦 Enviar pedido", "ship")}
                   >
                     Enviar pedido
                   </button>
 
                   <button
-                    onClick={() => openPopup(pedido, "↩️ Entrada pedido")}
+                    onClick={() => openPopup(pedido, "↩️ Entrada pedido", "return")}
                   >
                     Entrada pedido
                   </button>
@@ -199,7 +263,12 @@ function Pedidos() {
 
       {/* Popup */}
       {popupPedido && (
-        <PedidoPopup pedido={popupPedido} titulo={popupTitulo} onClose={closePopup} />
+        <PedidoPopup
+          pedido={popupPedido}
+          titulo={popupTitulo}
+          tipoAccion={popupAccion}
+          onClose={closePopup}
+        />
       )}
     </div>
   );

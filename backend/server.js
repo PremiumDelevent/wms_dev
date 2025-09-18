@@ -112,6 +112,7 @@ async function getBcAlbaranes() {
 // Middleware
 // =======================
 app.use(cors());
+app.use(express.json());
 
 // =======================
 // Endpoints
@@ -165,17 +166,56 @@ app.get("/api/pedidos-db", async (_req, res) => {
   }
 });
 
-app.get("/api/pedido-lines-db/:orderId", async (req, res) => {
-  const { orderId } = req.params;
+app.post("/api/return-order", async (req, res) => {
+  const { productos } = req.body;
 
   try {
-    const result = await pool.query("SELECT * FROM order_lines WHERE pedido_id = $1", [orderId]);
-    res.json(result.rows);
-  } catch (error) {
-    console.error("❌ Error obteniendo líneas de pedido desde DB:", error.message);
-    res.status(500).json({ error: "Error obteniendo líneas de pedido desde la base de datos" });
+    for (const p of productos) {
+      const result = await pool.query(
+        "UPDATE products SET stock = stock + $1 WHERE id = $2",
+        [p.cantidad, p.producto_id]
+      );
+    }
+
+    // ✅ Agregar respuesta de éxito
+    res.status(200).json({ 
+      message: "✅ Stock actualizado correctamente" 
+    });
+
+  } catch (err) {
+    console.error("❌ Error procesando entrada:", err.message);
+    res.status(500).json({ 
+      message: "❌ Error procesando entrada de productos",
+      error: err.message 
+    });
   }
 });
+
+app.post("/api/ship-order", async (req, res) => {
+  const { productos } = req.body;
+
+  try {
+    for (const p of productos) {
+      const result = await pool.query(
+        "UPDATE products SET stock = stock - $1 WHERE id = $2",
+        [p.cantidad, p.producto_id]
+      );
+    }
+
+    // ✅ Agregar respuesta de éxito
+    res.status(200).json({ 
+      message: "✅ Stock actualizado correctamente" 
+    });
+
+  } catch (err) {
+    console.error("❌ Error procesando envío:", err.message);
+    res.status(500).json({ 
+      message: "❌ Error procesando envío",
+      error: err.message
+    });
+  }
+});
+
 
 // =======================
 // Sincronización periódica
@@ -244,7 +284,7 @@ async function syncOrdersToDb() {
     console.log("🔄 Sincronizando pedidos desde BC a la DB (con líneas JSONB)...");
 
     const bcPedidos = await getBcAlbaranes(); // trae los pedidos con líneas expand
-    
+
     for (const p of bcPedidos) {
       const no = p.No || p.Document_No || p.documentNo || "SIN_DOC";
       const customerName = p.SelltoCustomerName || "";
