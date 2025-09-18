@@ -82,24 +82,20 @@ CREATE TABLE intercambios (
 );
 
 CREATE TABLE orders (
-    id SERIAL PRIMARY KEY,           -- ID interno del pedido
-    num VARCHAR(50) NOT NULL UNIQUE, -- Número de pedido (No)
-    sellto_customer_name VARCHAR(255) NOT NULL,
-    furniture_load_date_jmt TIMESTAMP,
-    jmt_status VARCHAR(50)
+    id SERIAL PRIMARY KEY,
+    num VARCHAR(50) UNIQUE NOT NULL,         -- Número de pedido en BC
+    sellto_customer_name TEXT NOT NULL,      -- Cliente
+    furniture_load_date_jmt TIMESTAMP NULL,  -- Fecha de carga
+    jmt_status VARCHAR(50),                  -- Estado
+    lineas JSONB NOT NULL DEFAULT '[]',      -- Array JSON con artículos
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
 );
 
-CREATE TABLE order_lines (
-    id SERIAL PRIMARY KEY,           -- ID interno de la línea
-    pedido_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE, -- relación con pedidos
-    num VARCHAR(50) NOT NULL,        -- número o código del artículo
-    descr VARCHAR(255),
-    quantity INT NOT NULL
-);
-
-ALTER TABLE order_lines ADD CONSTRAINT order_lines_unique_line UNIQUE (pedido_id, num);
-
-ALTER TABLE order_lines ALTER COLUMN quantity TYPE NUMERIC;
+-- Índices útiles
+CREATE INDEX idx_orders_num ON orders(num);
+CREATE INDEX idx_orders_estado ON orders(jmt_status);
+CREATE INDEX idx_orders_lineas_gin ON orders USING gin (lineas jsonb_path_ops);
 ```
 
 ## 4️⃣ Sincronización de productos

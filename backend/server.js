@@ -157,7 +157,7 @@ app.get("/api/intercambios-db", async (_req, res) => {
 
 app.get("/api/pedidos-db", async (_req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM orders");
+    const result = await pool.query("SELECT * FROM orders ORDER BY furniture_load_date_jmt DESC");
     res.json(result.rows);
   } catch (error) {
     console.error("❌ Error obteniendo pedidos desde DB:", error.message);
@@ -180,6 +180,7 @@ app.get("/api/pedido-lines-db/:orderId", async (req, res) => {
 // =======================
 // Sincronización periódica
 // =======================
+
 async function syncProductsToDb() {
   try {
     console.log("🔄 Sincronizando productos desde BC a la DB...");
@@ -238,14 +239,11 @@ async function syncIntercambiosToDb() {
   }
 }
 
-// =======================
-// Sincronización periódica solo pedidos (sin líneas)
-// =======================
 async function syncOrdersToDb() {
   try {
-    console.log("🔄 Sincronizando pedidos desde BC a la DB (sin líneas)...");
+    console.log("🔄 Sincronizando pedidos desde BC a la DB (con líneas JSONB)...");
 
-    const bcPedidos = await getBcAlbaranes(); // función que trae los pedidos de BC
+    const bcPedidos = await getBcAlbaranes(); // trae los pedidos con líneas expand
 
     for (const p of bcPedidos) {
       const no = p.No || p.Document_No || p.documentNo || "SIN_DOC";
@@ -255,18 +253,28 @@ async function syncOrdersToDb() {
         : null;
       const jmtStatus = p.jmtStatus || "";
 
-      // Insertar pedido en la DB (sin procesar líneas)
+      // Procesar líneas → JSON
+      
+      const lineas = (p.lines || []).map((linea) => ({
+        producto_id: linea.no || linea.No || null,
+        descripcion: linea.description || "",
+        cantidad: linea.quantity || 0,
+      }));
+
+      // Insertar pedido con JSONB de líneas
       await pool.query(
         `
-        INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status, lineas, updated_at)
+        VALUES ($1, $2, $3, $4, $5::jsonb, now())
         ON CONFLICT (num)
         DO UPDATE SET
           sellto_customer_name = EXCLUDED.sellto_customer_name,
           furniture_load_date_jmt = EXCLUDED.furniture_load_date_jmt,
-          jmt_status = EXCLUDED.jmt_status
+          jmt_status = EXCLUDED.jmt_status,
+          lineas = EXCLUDED.lineas,
+          updated_at = now()
         `,
-        [no, customerName, furnitureLoadDate, jmtStatus]
+        [no, customerName, furnitureLoadDate, jmtStatus, JSON.stringify(lineas)]
       );
     }
 

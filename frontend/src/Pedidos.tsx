@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface Linea {
-  id?: number;
-  num: string;
-  descr: string;
-  quantity: number;
+  producto_id: string | null;
+  descripcion: string;
+  cantidad: number;
 }
 
 interface Pedido {
@@ -14,7 +13,7 @@ interface Pedido {
   sellto_customer_name: string;
   furniture_load_date_jmt: string | null;
   jmt_status: string;
-  lines: Linea[];
+  lineas: Linea[]; // 👈 ahora coincide con DB
 }
 
 function Pedidos() {
@@ -24,25 +23,20 @@ function Pedidos() {
 
   useEffect(() => {
     const fetchPedidos = async () => {
-        setLoading(true);
-        try {
+      setLoading(true);
+      try {
         const res = await fetch("http://localhost:4000/api/pedidos-db");
-        const data: Omit<Pedido, "lines">[] = await res.json(); // los pedidos vienen sin lines
-        setPedidos(
-            data.map((p) => ({
-            ...p,
-            lines: [] as Linea[], // agregamos lines vacío
-            }))
-        );
-        } catch (err) {
+        const data: Pedido[] = await res.json();
+        setPedidos(data);
+      } catch (err) {
         console.error("❌ Error cargando pedidos:", err);
-        } finally {
+      } finally {
         setLoading(false);
-        }
+      }
     };
 
     fetchPedidos();
-    }, []);
+  }, []);
 
   return (
     <div className="container-1">
@@ -90,10 +84,10 @@ function Pedidos() {
                 </td>
                 <td>{pedido.jmt_status}</td>
                 <td>
-                  {pedido.lines.length > 0 ? (
-                    pedido.lines.map((linea, i) => (
+                  {pedido.lineas && pedido.lineas.length > 0 ? (
+                    pedido.lineas.map((linea, i) => (
                       <div key={i}>
-                        {linea.num} - {linea.descr} (x{linea.quantity})
+                        {linea.producto_id ?? "SIN_ID"} - {linea.descripcion} (x{linea.cantidad})
                       </div>
                     ))
                   ) : (
