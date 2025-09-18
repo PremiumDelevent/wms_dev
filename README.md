@@ -92,6 +92,8 @@ CREATE TABLE orders (
     updated_at TIMESTAMP DEFAULT now()
 );
 
+alter table orders add jmtEventName varchar(255);
+
 -- Índices útiles
 CREATE INDEX idx_orders_num ON orders(num);
 CREATE INDEX idx_orders_estado ON orders(jmt_status);

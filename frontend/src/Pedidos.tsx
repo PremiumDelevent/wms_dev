@@ -13,12 +13,95 @@ interface Pedido {
   sellto_customer_name: string;
   furniture_load_date_jmt: string | null;
   jmt_status: string;
-  lineas: Linea[]; // 👈 ahora coincide con DB
+  jmteventname: string;
+  lineas: Linea[];
+}
+
+interface PedidoPopupProps {
+  pedido: Pedido | null;
+  titulo: string;
+  onClose: () => void;
+}
+
+function PedidoPopup({ pedido, titulo, onClose }: PedidoPopupProps) {
+  if (!pedido) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.5)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+        color: "black",
+      }}
+    >
+      <div
+        style={{
+          background: "white",
+          padding: "20px",
+          borderRadius: "10px",
+          width: "600px",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          boxShadow: "0px 4px 10px rgba(0,0,0,0.3)",
+        }}
+      >
+        <h2>{titulo}</h2>
+        <p><strong>Número:</strong> {pedido.num}</p>
+        <p><strong>Cliente:</strong> {pedido.sellto_customer_name}</p>
+        <p>
+          <strong>Fecha carga:</strong>{" "}
+          {pedido.furniture_load_date_jmt
+            ? new Date(pedido.furniture_load_date_jmt).toLocaleString()
+            : "-"}
+        </p>
+        <p><strong>Estado:</strong> {pedido.jmt_status}</p>
+
+        <h3>Artículos</h3>
+        {pedido.lineas && pedido.lineas.length > 0 ? (
+          <ul>
+            {pedido.lineas.map((linea, i) => (
+              <li key={i}>
+                {linea.producto_id ?? "SIN_ID"} - {linea.descripcion} (x{linea.cantidad})
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <em>Sin artículos</em>
+        )}
+
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: "20px",
+            padding: "8px 16px",
+            backgroundColor: "#6c757d",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function Pedidos() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [popupPedido, setPopupPedido] = useState<Pedido | null>(null);
+  const [popupTitulo, setPopupTitulo] = useState<string>("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +120,16 @@ function Pedidos() {
 
     fetchPedidos();
   }, []);
+
+  const openPopup = (pedido: Pedido, titulo: string) => {
+    setPopupPedido(pedido);
+    setPopupTitulo(titulo);
+  };
+
+  const closePopup = () => {
+    setPopupPedido(null);
+    setPopupTitulo("");
+  };
 
   return (
     <div className="container-1">
@@ -67,9 +160,10 @@ function Pedidos() {
             <tr>
               <th>Número</th>
               <th>Cliente</th>
+              <th>Evento</th>
               <th>Fecha carga</th>
               <th>Estado</th>
-              <th>Artículos</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -77,6 +171,7 @@ function Pedidos() {
               <tr key={pedido.id}>
                 <td>{pedido.num}</td>
                 <td>{pedido.sellto_customer_name}</td>
+                <td>{pedido.jmteventname}</td>
                 <td>
                   {pedido.furniture_load_date_jmt
                     ? new Date(pedido.furniture_load_date_jmt).toLocaleString()
@@ -84,20 +179,27 @@ function Pedidos() {
                 </td>
                 <td>{pedido.jmt_status}</td>
                 <td>
-                  {pedido.lineas && pedido.lineas.length > 0 ? (
-                    pedido.lineas.map((linea, i) => (
-                      <div key={i}>
-                        {linea.producto_id ?? "SIN_ID"} - {linea.descripcion} (x{linea.cantidad})
-                      </div>
-                    ))
-                  ) : (
-                    <em>Sin artículos</em>
-                  )}
+                  <button
+                    onClick={() => openPopup(pedido, "📦 Enviar pedido")}
+                  >
+                    Enviar pedido
+                  </button>
+
+                  <button
+                    onClick={() => openPopup(pedido, "↩️ Entrada pedido")}
+                  >
+                    Entrada pedido
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* Popup */}
+      {popupPedido && (
+        <PedidoPopup pedido={popupPedido} titulo={popupTitulo} onClose={closePopup} />
       )}
     </div>
   );

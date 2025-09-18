@@ -244,10 +244,11 @@ async function syncOrdersToDb() {
     console.log("🔄 Sincronizando pedidos desde BC a la DB (con líneas JSONB)...");
 
     const bcPedidos = await getBcAlbaranes(); // trae los pedidos con líneas expand
-
+    
     for (const p of bcPedidos) {
       const no = p.No || p.Document_No || p.documentNo || "SIN_DOC";
       const customerName = p.SelltoCustomerName || "";
+      const eventName = p.jmtEventName || "";
       const furnitureLoadDate = p.furnitureLoadDateJMT
         ? new Date(p.furnitureLoadDateJMT)
         : null;
@@ -264,17 +265,18 @@ async function syncOrdersToDb() {
       // Insertar pedido con JSONB de líneas
       await pool.query(
         `
-        INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status, lineas, updated_at)
-        VALUES ($1, $2, $3, $4, $5::jsonb, now())
+        INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status, lineas, updated_at, jmtEventName)
+        VALUES ($1, $2, $3, $4, $5::jsonb, now(), $6)
         ON CONFLICT (num)
         DO UPDATE SET
           sellto_customer_name = EXCLUDED.sellto_customer_name,
           furniture_load_date_jmt = EXCLUDED.furniture_load_date_jmt,
           jmt_status = EXCLUDED.jmt_status,
+          jmtEventName = EXCLUDED.jmtEventName,
           lineas = EXCLUDED.lineas,
           updated_at = now()
         `,
-        [no, customerName, furnitureLoadDate, jmtStatus, JSON.stringify(lineas)]
+        [no, customerName, furnitureLoadDate, jmtStatus, JSON.stringify(lineas), eventName]
       );
     }
 
