@@ -216,6 +216,68 @@ app.post("/api/ship-order", async (req, res) => {
   }
 });
 
+app.post("/api/ship-status", async (req, res) => {
+  const { pedidoId } = req.body;  // ⬅️ recuperamos directamente
+
+  try {
+    await pool.query(
+      "UPDATE orders SET jmt_status = 'ENVIADO' WHERE id = $1",
+      [pedidoId]
+    );
+
+    res.status(200).json({
+      message: "✅ Estado del pedido actualizado correctamente"
+    });
+  } catch (err) {
+    console.error("❌ Error procesando estado del pedido:", err.message);
+    res.status(500).json({
+      message: "❌ Error procesando estado del pedido",
+      error: err.message
+    });
+  }
+});
+
+app.post("/api/return-status", async (req, res) => {
+  const { pedidoId } = req.body;  // ⬅️ recuperamos directamente
+
+  try {
+    await pool.query(
+      "UPDATE orders SET jmt_status = 'DEVUELTO' WHERE id = $1",
+      [pedidoId]
+    );
+
+    res.status(200).json({
+      message: "✅ Estado del pedido actualizado correctamente"
+    });
+  } catch (err) {
+    console.error("❌ Error procesando estado del pedido:", err.message);
+    res.status(500).json({
+      message: "❌ Error procesando estado del pedido",
+      error: err.message
+    });
+  }
+});
+
+app.post("/api/incident-status", async (req, res) => {
+  const { pedidoId } = req.body;  // ⬅️ recuperamos directamente
+
+  try {
+    await pool.query(
+      "UPDATE orders SET jmt_status = 'INCIDENCIA' WHERE id = $1",
+      [pedidoId]
+    );
+
+    res.status(200).json({
+      message: "✅ Estado del pedido actualizado correctamente"
+    });
+  } catch (err) {
+    console.error("❌ Error procesando estado del pedido:", err.message);
+    res.status(500).json({
+      message: "❌ Error procesando estado del pedido",
+      error: err.message
+    });
+  }
+});
 
 // =======================
 // Sincronización periódica

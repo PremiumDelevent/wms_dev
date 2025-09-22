@@ -109,6 +109,57 @@ function PedidoPopup({ pedido, titulo, tipoAccion, onClose }: PedidoPopupProps) 
     }
   };
 
+ const actualizarStatus = async () => {
+  try {
+    const endpoint =
+      tipoAccion === "ship"
+        ? "http://localhost:4000/api/ship-status"
+        : "http://localhost:4000/api/return-status";
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pedidoId: pedido.id }), // ⬅️ directo
+    });
+
+    const data = await res.json().catch(() => null);
+    setIsError(!res.ok);
+    setMensaje(
+      data?.message ||
+        (res.ok
+          ? "✅ Estado actualizado correctamente"
+          : "❌ Error actualizando estado")
+    );
+  } catch (err) {
+    console.error("❌ Error actualizando estado:", err);
+    setIsError(true);
+    setMensaje("❌ Error actualizando estado");
+  }
+};
+
+const registrarIncidencia = async () => {
+  try {
+    const res = await fetch("http://localhost:4000/api/incident-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pedidoId: pedido.id }),
+    });
+
+    const data = await res.json().catch(() => null);
+    setIsError(!res.ok);
+    setMensaje(
+      data?.message ||
+        (res.ok
+          ? "⚠️ Incidencia registrada correctamente"
+          : "❌ Error registrando incidencia")
+    );
+  } catch (err) {
+    console.error("❌ Error registrando incidencia:", err);
+    setIsError(true);
+    setMensaje("❌ Error registrando incidencia");
+  }
+};
+
   return (
     <div style={{
       position: "fixed",
@@ -158,7 +209,19 @@ function PedidoPopup({ pedido, titulo, tipoAccion, onClose }: PedidoPopupProps) 
 
         {mensaje && <p style={{ color: isError ? "red" : "green", fontWeight: "bold" }}>{mensaje}</p>}
 
-        <button onClick={actualizarStock} style={{
+        <button onClick={async () => { 
+          actualizarStock(); 
+          actualizarStatus();
+          if (tipoAccion === "return") {
+            const hayIncidencias = pedido.lineas.some(
+              (linea, i) => cantidades[i] !== linea.cantidad
+            );
+
+            if (hayIncidencias) {
+              await registrarIncidencia();
+            }
+          }
+        }} style={{
           marginTop: "20px",
           padding: "8px 16px",
           backgroundColor: "#28a745",
