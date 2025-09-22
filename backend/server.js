@@ -373,7 +373,6 @@ async function syncOrdersToDb() {
         DO UPDATE SET
           sellto_customer_name = EXCLUDED.sellto_customer_name,
           furniture_load_date_jmt = EXCLUDED.furniture_load_date_jmt,
-          jmt_status = EXCLUDED.jmt_status,
           jmtEventName = EXCLUDED.jmtEventName,
           lineas = EXCLUDED.lineas,
           updated_at = now()
@@ -389,15 +388,15 @@ async function syncOrdersToDb() {
 }
 
 // Ejecutar sincronización al arrancar
-//syncProductsToDb();
-//syncIntercambiosToDb();
+syncProductsToDb();
+syncIntercambiosToDb();
 syncOrdersToDb();
 
 // Cron job: cada 30 minutos
 cron.schedule("*/30 * * * *", () => {
   //syncProductsToDb();
   //syncIntercambiosToDb();
-  syncOrdersToDb();
+  //syncOrdersToDb();
 });
 
 // =======================
