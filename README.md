@@ -5,6 +5,26 @@ Stack: **React (TypeScript)** en frontend, **Node.js / Express** en backend y **
 
 ---
 
+## Arquitectura Hexagonal
+
+El backend está estructurado siguiendo la arquitectura hexagonal, separando el núcleo de negocio (dominio) de los mecanismos externos (adaptadores e infraestructura).  
+Esto permite mayor mantenibilidad, testeo y flexibilidad para integrar nuevas fuentes de datos o interfaces.
+
+- **domain/**: Lógica de negocio y entidades principales.
+- **application/**: Casos de uso, servicios y orquestación de la lógica de negocio.
+- **infrastructure/**: Implementaciones concretas de acceso a datos, integración con sistemas externos (ej: PostgreSQL, Business Central, API REST).
+
+```
+backend/
+├── domain/         # Entidades y lógica de negocio
+├── application/    # Casos de uso y servicios
+├── infrastructure/ # Adaptadores, persistencia y APIs externas
+├── server.js       # Entrada principal
+└── ...
+```
+
+---
+
 ## Requisitos previos
 
 - Node.js ≥ 18
