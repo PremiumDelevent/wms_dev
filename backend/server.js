@@ -1,3 +1,6 @@
+//=======================
+// Requirements
+//=======================
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -5,12 +8,17 @@ const axios = require("axios");
 const { Pool } = require("pg");
 const cron = require("node-cron");
 
-// Importar router hexagonal de products
+// =======================
+// Routers
+// =======================
 const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
 const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
 const createIntercambiosRouter = require("./infrastructure/api/http/routes/intercambios.routes");
 const createOrdersRouter = require("./infrastructure/api/http/routes/orders.routes");
 
+// =======================
+// App setup
+// =======================
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -124,30 +132,16 @@ app.use(express.json());
 // Endpoints
 // =======================
 
+// Router hexagonal /api/hello
 app.use("/api", createHelloRouter());
 
-app.get("/api/products", async (_req, res) => {
-  const products = await getBcProducts();
-  res.json({ products });
-});
-
-app.get("/api/sales-lines", async (_req, res) => {
-  const salesLines = await getBcSalesLines();
-  res.json({ salesLines });
-});
-
-app.get("/api/albaranes", async (_req, res) => {
-  const albaranes = await getBcAlbaranes();
-  res.json({ albaranes });
-});
-
-// Montar router hexagonal de products-db bajo /api
+// Router hexagonal /api/products-db
 app.use("/api", createProductsRouter({ pool }));
 
-// Montar router hexagonal de intercambios-db bajo /api
+// Router hexagonal /api/intercambios-db
 app.use("/api", createIntercambiosRouter({ pool }));
 
-// Montar router hexagonal de orders-db bajo /api
+// Router hexagonal /api/orders-db
 app.use("/api", createOrdersRouter({ pool }));
 
 app.post("/api/return-order", async (req, res) => {
