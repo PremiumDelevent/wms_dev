@@ -7,6 +7,7 @@ const cron = require("node-cron");
 
 // Importar router hexagonal de products
 const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
+const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -120,9 +121,12 @@ app.use(express.json());
 // =======================
 // Endpoints
 // =======================
-app.get("/api/hello", (_req, res) => {
+
+/*app.get("/api/hello", (_req, res) => {
   res.json({ message: "Hola desde el backend 👋" });
-});
+});*/
+
+app.use("/api", createHelloRouter());
 
 app.get("/api/products", async (_req, res) => {
   const products = await getBcProducts();
@@ -390,7 +394,7 @@ async function syncOrdersToDb() {
 
 // Ejecutar sincronización al arrancar
 syncProductsToDb();
-syncIntercambiosToDb();
+//syncIntercambiosToDb();
 syncOrdersToDb();
 
 // Cron job: cada 30 minutos
