@@ -9,7 +9,7 @@ const cron = require("node-cron");
 const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
 const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
 const createIntercambiosRouter = require("./infrastructure/api/http/routes/intercambios.routes");
-
+const createOrdersRouter = require("./infrastructure/api/http/routes/orders.routes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -124,10 +124,6 @@ app.use(express.json());
 // Endpoints
 // =======================
 
-/*app.get("/api/hello", (_req, res) => {
-  res.json({ message: "Hola desde el backend 👋" });
-});*/
-
 app.use("/api", createHelloRouter());
 
 app.get("/api/products", async (_req, res) => {
@@ -145,42 +141,14 @@ app.get("/api/albaranes", async (_req, res) => {
   res.json({ albaranes });
 });
 
-// /api/products-db movido al router hexagonal (products.routes.js)
-// app.get("/api/products-db", async (_req, res) => {
-//   try {
-//     const result = await pool.query("SELECT * FROM products");
-//     res.json(result.rows);
-//   } catch (error) {
-//     console.error("❌ Error obteniendo productos desde DB:", error.message);
-//     res.status(500).json({ error: "Error obteniendo productos desde la base de datos" });
-//   }
-// });
-
 // Montar router hexagonal de products-db bajo /api
 app.use("/api", createProductsRouter({ pool }));
-
-/*app.get("/api/intercambios-db", async (_req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM intercambios");
-    res.json(result.rows);
-  } catch (error) {
-    console.error("❌ Error obteniendo intercambios desde DB:", error.message);
-    res.status(500).json({ error: "Error obteniendo intercambios desde la base de datos" });
-  }
-});*/
 
 // Montar router hexagonal de intercambios-db bajo /api
 app.use("/api", createIntercambiosRouter({ pool }));
 
-app.get("/api/pedidos-db", async (_req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM orders ORDER BY furniture_load_date_jmt DESC");
-    res.json(result.rows);
-  } catch (error) {
-    console.error("❌ Error obteniendo pedidos desde DB:", error.message);
-    res.status(500).json({ error: "Error obteniendo pedidos desde la base de datos" });
-  }
-});
+// Montar router hexagonal de orders-db bajo /api
+app.use("/api", createOrdersRouter({ pool }));
 
 app.post("/api/return-order", async (req, res) => {
   const { productos } = req.body;

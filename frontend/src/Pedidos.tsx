@@ -266,7 +266,7 @@ function Pedidos() {
     const fetchPedidos = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:4000/api/pedidos-db");
+        const res = await fetch("http://localhost:4000/api/orders-db");
         const data: Pedido[] = await res.json();
         setPedidos(data);
       } catch (err) {
