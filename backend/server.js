@@ -15,6 +15,7 @@ const createProductsRouter = require("./infrastructure/api/http/routes/products.
 const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
 const createIntercambiosRouter = require("./infrastructure/api/http/routes/intercambios.routes");
 const createOrdersRouter = require("./infrastructure/api/http/routes/orders.routes");
+const createReturnOrderRouter = require("./infrastructure/api/http/routes/return-order.routes");
 
 // =======================
 // App setup
@@ -144,29 +145,9 @@ app.use("/api", createIntercambiosRouter({ pool }));
 // Router hexagonal /api/orders-db
 app.use("/api", createOrdersRouter({ pool }));
 
-app.post("/api/return-order", async (req, res) => {
-  const { productos } = req.body;
+// Router hexagonal /api/return-order
+app.use("/api", createReturnOrderRouter({ pool }));
 
-  try {
-    for (const p of productos) {
-      await pool.query(
-        "UPDATE products SET stock = stock + $1 WHERE id = $2",
-        [p.cantidad, p.producto_id]
-      );
-    }
-
-    res.status(200).json({
-      message: "✅ Stock actualizado correctamente"
-    });
-
-  } catch (err) {
-    console.error("❌ Error procesando entrada:", err.message);
-    res.status(500).json({
-      message: "❌ Error procesando entrada de productos",
-      error: err.message
-    });
-  }
-});
 
 app.post("/api/ship-order", async (req, res) => {
   const { productos } = req.body;
