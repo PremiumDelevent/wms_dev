@@ -5,6 +5,9 @@ const axios = require("axios");
 const { Pool } = require("pg");
 const cron = require("node-cron");
 
+// Importar router hexagonal de products
+const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -94,7 +97,7 @@ async function getBcSalesLines() {
 async function getBcAlbaranes() {
   const token = await getBcAccessToken();
   if (!token) return [];
-  const url = `https://api.businesscentral.dynamics.com/v2.0/3283f487-58a3-41e8-8fce-4b83155bc6f8/PRODUCTION/api/BDOSpain/laukatu/v1.0/companies(b78acfed-0a57-eb11-89fa-000d3a47e0e0)/LKSalesOrders?\$expand=lines`;
+  const url = `https://api.businesscentral.dynamics.com/v2.0/3283f487-58a3-41e8-8fce-4b83155bc6f8/PRODUCTION/api/BDOSpain/laukatu/v1.0/companies(b78acfed-0a57-eb11-89fa-000d3a47e0e0)/LKSalesOrders?$expand=lines`;
 
   try {
     const response = await axios.get(url, {
@@ -136,15 +139,19 @@ app.get("/api/albaranes", async (_req, res) => {
   res.json({ albaranes });
 });
 
-app.get("/api/products-db", async (_req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM products");
-    res.json(result.rows);
-  } catch (error) {
-    console.error("❌ Error obteniendo productos desde DB:", error.message);
-    res.status(500).json({ error: "Error obteniendo productos desde la base de datos" });
-  }
-});
+// /api/products-db movido al router hexagonal (products.routes.js)
+// app.get("/api/products-db", async (_req, res) => {
+//   try {
+//     const result = await pool.query("SELECT * FROM products");
+//     res.json(result.rows);
+//   } catch (error) {
+//     console.error("❌ Error obteniendo productos desde DB:", error.message);
+//     res.status(500).json({ error: "Error obteniendo productos desde la base de datos" });
+//   }
+// });
+
+// Montar router hexagonal de products-db bajo /api
+app.use("/api", createProductsRouter({ pool }));
 
 app.get("/api/intercambios-db", async (_req, res) => {
   try {
@@ -171,22 +178,21 @@ app.post("/api/return-order", async (req, res) => {
 
   try {
     for (const p of productos) {
-      const result = await pool.query(
+      await pool.query(
         "UPDATE products SET stock = stock + $1 WHERE id = $2",
         [p.cantidad, p.producto_id]
       );
     }
 
-    // ✅ Agregar respuesta de éxito
-    res.status(200).json({ 
-      message: "✅ Stock actualizado correctamente" 
+    res.status(200).json({
+      message: "✅ Stock actualizado correctamente"
     });
 
   } catch (err) {
     console.error("❌ Error procesando entrada:", err.message);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "❌ Error procesando entrada de productos",
-      error: err.message 
+      error: err.message
     });
   }
 });
@@ -196,20 +202,19 @@ app.post("/api/ship-order", async (req, res) => {
 
   try {
     for (const p of productos) {
-      const result = await pool.query(
+      await pool.query(
         "UPDATE products SET stock = stock - $1 WHERE id = $2",
         [p.cantidad, p.producto_id]
       );
     }
 
-    // ✅ Agregar respuesta de éxito
-    res.status(200).json({ 
-      message: "✅ Stock actualizado correctamente" 
+    res.status(200).json({
+      message: "✅ Stock actualizado correctamente"
     });
 
   } catch (err) {
     console.error("❌ Error procesando envío:", err.message);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "❌ Error procesando envío",
       error: err.message
     });
@@ -217,7 +222,7 @@ app.post("/api/ship-order", async (req, res) => {
 });
 
 app.post("/api/ship-status", async (req, res) => {
-  const { pedidoId } = req.body;  // ⬅️ recuperamos directamente
+  const { pedidoId } = req.body;
 
   try {
     await pool.query(
@@ -238,7 +243,7 @@ app.post("/api/ship-status", async (req, res) => {
 });
 
 app.post("/api/return-status", async (req, res) => {
-  const { pedidoId } = req.body;  // ⬅️ recuperamos directamente
+  const { pedidoId } = req.body;
 
   try {
     await pool.query(
@@ -259,7 +264,7 @@ app.post("/api/return-status", async (req, res) => {
 });
 
 app.post("/api/incident-status", async (req, res) => {
-  const { pedidoId } = req.body;  // ⬅️ recuperamos directamente
+  const { pedidoId } = req.body;
 
   try {
     await pool.query(
@@ -314,7 +319,6 @@ async function syncIntercambiosToDb() {
     const bcIntercambios = await getBcSalesLines();
 
     for (const p of bcIntercambios) {
-      // Ojo con las propiedades: revisa si es Document_No o documentNo
       const documentNo = p.Document_No || p.documentNo || "SIN_DOC";
       const description = p.Description || "";
       const locationCode = p.Location_Code || "";
@@ -345,7 +349,7 @@ async function syncOrdersToDb() {
   try {
     console.log("🔄 Sincronizando pedidos desde BC a la DB (con líneas JSONB)...");
 
-    const bcPedidos = await getBcAlbaranes(); // trae los pedidos con líneas expand
+    const bcPedidos = await getBcAlbaranes();
 
     for (const p of bcPedidos) {
       const no = p.No || p.Document_No || p.documentNo || "SIN_DOC";
@@ -356,15 +360,12 @@ async function syncOrdersToDb() {
         : null;
       const jmtStatus = p.jmtStatus || "";
 
-      // Procesar líneas → JSON
-      
       const lineas = (p.lines || []).map((linea) => ({
         producto_id: linea.no || linea.No || null,
         descripcion: linea.description || "",
         cantidad: linea.quantity || 0,
       }));
 
-      // Insertar pedido con JSONB de líneas
       await pool.query(
         `
         INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status, lineas, updated_at, jmtEventName)
