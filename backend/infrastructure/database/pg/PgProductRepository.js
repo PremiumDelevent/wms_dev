@@ -8,9 +8,11 @@ class PgProductRepository extends ProductRepository {
   }
 
   async listAll() {
+
     const { rows } = await this.pool.query(
       "SELECT id, name, category, stock FROM products ORDER BY id ASC"
     );
+    
     return rows.map(
       (r) =>
         new Product({

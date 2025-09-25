@@ -8,6 +8,8 @@ const cron = require("node-cron");
 // Importar router hexagonal de products
 const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
 const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
+const createIntercambiosRouter = require("./infrastructure/api/http/routes/intercambios.routes");
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -157,7 +159,7 @@ app.get("/api/albaranes", async (_req, res) => {
 // Montar router hexagonal de products-db bajo /api
 app.use("/api", createProductsRouter({ pool }));
 
-app.get("/api/intercambios-db", async (_req, res) => {
+/*app.get("/api/intercambios-db", async (_req, res) => {
   try {
     const result = await pool.query("SELECT * FROM intercambios");
     res.json(result.rows);
@@ -165,7 +167,10 @@ app.get("/api/intercambios-db", async (_req, res) => {
     console.error("❌ Error obteniendo intercambios desde DB:", error.message);
     res.status(500).json({ error: "Error obteniendo intercambios desde la base de datos" });
   }
-});
+});*/
+
+// Montar router hexagonal de intercambios-db bajo /api
+app.use("/api", createIntercambiosRouter({ pool }));
 
 app.get("/api/pedidos-db", async (_req, res) => {
   try {
