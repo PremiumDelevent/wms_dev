@@ -17,6 +17,8 @@ const createIntercambiosRouter = require("./infrastructure/api/http/routes/inter
 const createOrdersRouter = require("./infrastructure/api/http/routes/orders.routes");
 const createReturnOrderRouter = require("./infrastructure/api/http/routes/return-order.routes");
 const createShipOrderRouter = require("./infrastructure/api/http/routes/ship-order.routes");
+const createShipStatusRouter = require("./infrastructure/api/http/routes/ship-status.routes");
+
 // =======================
 // App setup
 // =======================
@@ -148,53 +150,11 @@ app.use("/api", createOrdersRouter({ pool }));
 // Router hexagonal /api/return-order
 app.use("/api", createReturnOrderRouter({ pool }));
 
-
-/*app.post("/api/ship-order", async (req, res) => {
-  const { productos } = req.body;
-
-  try {
-    for (const p of productos) {
-      await pool.query(
-        "UPDATE products SET stock = stock - $1 WHERE id = $2",
-        [p.cantidad, p.producto_id]
-      );
-    }
-
-    res.status(200).json({
-      message: "✅ Stock actualizado correctamente"
-    });
-
-  } catch (err) {
-    console.error("❌ Error procesando envío:", err.message);
-    res.status(500).json({
-      message: "❌ Error procesando envío",
-      error: err.message
-    });
-  }
-});*/
-
+// Router hexagonal /api/ship-order
 app.use("/api", createShipOrderRouter({ pool }));
 
-app.post("/api/ship-status", async (req, res) => {
-  const { pedidoId } = req.body;
-
-  try {
-    await pool.query(
-      "UPDATE orders SET jmt_status = 'ENVIADO' WHERE id = $1",
-      [pedidoId]
-    );
-
-    res.status(200).json({
-      message: "✅ Estado del pedido actualizado correctamente"
-    });
-  } catch (err) {
-    console.error("❌ Error procesando estado del pedido:", err.message);
-    res.status(500).json({
-      message: "❌ Error procesando estado del pedido",
-      error: err.message
-    });
-  }
-});
+// Router hexagonal /api/ship-status
+app.use("/api", createShipStatusRouter({ pool }));
 
 app.post("/api/return-status", async (req, res) => {
   const { pedidoId } = req.body;
