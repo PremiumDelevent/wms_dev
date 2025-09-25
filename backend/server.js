@@ -11,13 +11,14 @@ const cron = require("node-cron");
 // =======================
 // Routers
 // =======================
-const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
 const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
+const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
 const createIntercambiosRouter = require("./infrastructure/api/http/routes/intercambios.routes");
 const createOrdersRouter = require("./infrastructure/api/http/routes/orders.routes");
 const createReturnOrderRouter = require("./infrastructure/api/http/routes/return-order.routes");
 const createShipOrderRouter = require("./infrastructure/api/http/routes/ship-order.routes");
 const createShipStatusRouter = require("./infrastructure/api/http/routes/ship-status.routes");
+const createReturnStatusRouter = require("./infrastructure/api/http/routes/return-status.routes");
 
 // =======================
 // App setup
@@ -156,7 +157,7 @@ app.use("/api", createShipOrderRouter({ pool }));
 // Router hexagonal /api/ship-status
 app.use("/api", createShipStatusRouter({ pool }));
 
-app.post("/api/return-status", async (req, res) => {
+/*app.post("/api/return-status", async (req, res) => {
   const { pedidoId } = req.body;
 
   try {
@@ -175,7 +176,10 @@ app.post("/api/return-status", async (req, res) => {
       error: err.message
     });
   }
-});
+});*/
+
+// Router hexagonal /api/return-status
+app.use("/api", createReturnStatusRouter({ pool }));
 
 app.post("/api/incident-status", async (req, res) => {
   const { pedidoId } = req.body;
