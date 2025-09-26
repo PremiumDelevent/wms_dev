@@ -19,6 +19,7 @@ const createReturnOrderRouter = require("./infrastructure/api/http/routes/return
 const createShipOrderRouter = require("./infrastructure/api/http/routes/ship-order.routes");
 const createShipStatusRouter = require("./infrastructure/api/http/routes/ship-status.routes");
 const createReturnStatusRouter = require("./infrastructure/api/http/routes/return-status.routes");
+const createIncidentStatusRouter = require("./infrastructure/api/http/routes/incident-status.routes");
 
 // =======================
 // App setup
@@ -157,50 +158,11 @@ app.use("/api", createShipOrderRouter({ pool }));
 // Router hexagonal /api/ship-status
 app.use("/api", createShipStatusRouter({ pool }));
 
-/*app.post("/api/return-status", async (req, res) => {
-  const { pedidoId } = req.body;
-
-  try {
-    await pool.query(
-      "UPDATE orders SET jmt_status = 'DEVUELTO' WHERE id = $1",
-      [pedidoId]
-    );
-
-    res.status(200).json({
-      message: "✅ Estado del pedido actualizado correctamente"
-    });
-  } catch (err) {
-    console.error("❌ Error procesando estado del pedido:", err.message);
-    res.status(500).json({
-      message: "❌ Error procesando estado del pedido",
-      error: err.message
-    });
-  }
-});*/
-
 // Router hexagonal /api/return-status
 app.use("/api", createReturnStatusRouter({ pool }));
 
-app.post("/api/incident-status", async (req, res) => {
-  const { pedidoId } = req.body;
-
-  try {
-    await pool.query(
-      "UPDATE orders SET jmt_status = 'INCIDENCIA' WHERE id = $1",
-      [pedidoId]
-    );
-
-    res.status(200).json({
-      message: "✅ Estado del pedido actualizado correctamente"
-    });
-  } catch (err) {
-    console.error("❌ Error procesando estado del pedido:", err.message);
-    res.status(500).json({
-      message: "❌ Error procesando estado del pedido",
-      error: err.message
-    });
-  }
-});
+// Router hexagonal /api/incident-status
+app.use("/api", createIncidentStatusRouter({ pool }));
 
 // =======================
 // Sincronización periódica
