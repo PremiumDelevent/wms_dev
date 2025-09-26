@@ -17,8 +17,41 @@ Esto permite mayor mantenibilidad, testeo y flexibilidad para integrar nuevas fu
 ```
 backend/
 ├── domain/         # Entidades y lógica de negocio
-├── application/    # Casos de uso y servicios
+|     └── entities/
+│         └── Order.js   
+|         └── Intercambios.js
+|         └── Product.js    
+|     └── ports/
+│          └── IncidentStatusRespository.js 
+|          └── IntercambiosRepository.js 
+|          └── OrdersRepository.js 
+|          └── ProductRepository.js 
+|          └── ReturnOrderRepository.js 
+|          └── ReturnStatusRepository.js
+|          └── ShipOrderRepository.js
+|          └── ShipStatusRepository.js
+├── application/use-cases    # Casos de uso y servicios
+|     └── IncidentStatusUseCase.js
+      └── ListIntercambiosUseCase.js
+      └── ListOrdersUseCase.js
+      └── ListProductsUseCase.js
+      └── ReturnOrderUseCase.js
+      └── ReturnStatusUseCase.js
+      └── ShipOrderUseCase.js
+      └── ShipStatusStatusUseCase.js
 ├── infrastructure/ # Adaptadores, persistencia y APIs externas
+      └── api/http/routes
+          ...
+      └── database/pg
+            └── PgIncidentStatusRespository.js
+            └── PgIntercambiosRepository.js
+            └── PgOrdersRepository.js
+            └── PgProductRepository.js
+            └── PgReturnOrderRepository.js
+            └── PgReturnStatusRepository.js
+            └── PgReturnOrderRepository.js
+            └── PgShipOrderRepository.js
+            └── PgShipStatusRepository.js
 ├── server.js       # Entrada principal
 └── ...
 ```
@@ -56,11 +89,21 @@ Endpoints disponibles:
 
 /api/hello → test simple
 
-/api/products → productos desde Business Central
-
-/api/sales-lines → líneas de venta BC
-
 /api/products-db → productos desde PostgreSQL (stock real)
+
+/api/intercambios-db
+
+/api/orders-db
+
+/api/return-order
+
+/api/ship-order
+
+/api/ship-status
+
+/api/return-status
+
+/api/incident-status
 
 ## 3️⃣ Base de datos local con Docker
 
