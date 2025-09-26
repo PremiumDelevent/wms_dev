@@ -23,7 +23,7 @@ class OrdersSyncScheduler {
         businessCentralOrdersService: this.businessCentralOrdersService
       });
     } catch (err) {
-      console.error("[SYNC] Error during synchronization:", err.message);
+      console.error("❌ [SYNC] Error during synchronization:", err.message);
     }
   }
 }

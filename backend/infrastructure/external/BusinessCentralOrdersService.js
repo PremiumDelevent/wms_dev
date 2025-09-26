@@ -34,8 +34,6 @@ class BusinessCentralOrdersService {
 
       const url = `https://api.businesscentral.dynamics.com/v2.0/3283f487-58a3-41e8-8fce-4b83155bc6f8/PRODUCTION/api/BDOSpain/laukatu/v1.0/companies(b78acfed-0a57-eb11-89fa-000d3a47e0e0)/LKSalesOrders?$expand=lines`;
 
-      console.log("[BC] Fetching orders from:", url);
-
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,7 +61,7 @@ class BusinessCentralOrdersService {
             });
         });
     } catch (err) {
-      console.error("[BC] Error fetching orders:", err.message);
+      console.error("❌ [BC] Error fetching orders:", err.message);
       return [];
     }
   }
