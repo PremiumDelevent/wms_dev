@@ -26,6 +26,28 @@ class PgOrdersRepository extends OrdersRepository {
                 })
         );
     }
+
+    async save(order) {
+        await this.pool.query(
+            `INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status, jmtEventName, lineas, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, now())
+            ON CONFLICT (num)
+            DO UPDATE SET sellto_customer_name = EXCLUDED.sellto_customer_name,
+                            furniture_load_date_jmt = EXCLUDED.furniture_load_date_jmt,
+                            jmt_status = EXCLUDED.jmt_status,
+                            jmtEventName = EXCLUDED.jmtEventName,
+                            lineas = EXCLUDED.lineas,
+                            updated_at = now()`,
+            [
+                order.num,
+                order.sellto_customer_name,
+                order.furniture_load_date_jmt,
+                order.jmt_status,
+                order.jmteventname,
+                JSON.stringify(order.lineas)
+            ]
+        );
+    }
 }
 
 module.exports = PgOrdersRepository;

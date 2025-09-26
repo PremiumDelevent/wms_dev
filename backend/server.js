@@ -6,7 +6,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const { Pool } = require("pg");
-const cron = require("node-cron");
+const bodyParser = require("body-parser");
 
 // =======================
 // Routers
@@ -22,9 +22,21 @@ const createReturnStatusRouter = require("./infrastructure/api/http/routes/retur
 const createIncidentStatusRouter = require("./infrastructure/api/http/routes/incident-status.routes");
 
 // =======================
+// PG y Servicios
+// =======================  
+const PgOrdersRepository = require("./infrastructure/database/pg/PgOrdersRepository");
+const BusinessCentralOrdersService = require("./infrastructure/external/BusinessCentralOrdersService");
+
+// =======================
+// Schedulers
+// =======================
+const OrdersSyncScheduler = require("./infrastructure/scheduler/OrdersSyncScheduler");
+
+// =======================
 // App setup
 // =======================
 const app = express();
+app.use(bodyParser.json());
 const PORT = process.env.PORT || 4000;
 
 // =======================
@@ -59,22 +71,7 @@ const pool = new Pool({
 // =======================
 // Funciones Business Central
 // =======================
-async function getBcAccessToken() {
-  const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-  try {
-    const params = new URLSearchParams();
-    params.append("grant_type", "client_credentials");
-    params.append("client_id", clientId);
-    params.append("client_secret", clientSecret);
-    params.append("scope", "https://api.businesscentral.dynamics.com/.default");
 
-    const response = await axios.post(url, params);
-    return response.data.access_token || null;
-  } catch (error) {
-    console.error("❌ Error obteniendo access_token:", error.response?.data || error.message);
-    return null;
-  }
-}
 
 async function getBcProducts() {
   const token = await getBcAccessToken();
@@ -106,23 +103,6 @@ async function getBcSalesLines() {
     return response.data.value || [];
   } catch (error) {
     console.error("❌ Error obteniendo líneas de venta:", error.response?.data || error.message);
-    return [];
-  }
-}
-
-async function getBcAlbaranes() {
-  const token = await getBcAccessToken();
-  if (!token) return [];
-  const url = `https://api.businesscentral.dynamics.com/v2.0/3283f487-58a3-41e8-8fce-4b83155bc6f8/PRODUCTION/api/BDOSpain/laukatu/v1.0/companies(b78acfed-0a57-eb11-89fa-000d3a47e0e0)/LKSalesOrders?$expand=lines`;
-
-  try {
-    const response = await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-      timeout: 60000,
-    });
-    return response.data.value || [];
-  } catch (error) {
-    console.error("❌ Error obteniendo albaranes:", error.response?.data || error.message);
     return [];
   }
 }
@@ -164,10 +144,7 @@ app.use("/api", createReturnStatusRouter({ pool }));
 // Router hexagonal /api/incident-status
 app.use("/api", createIncidentStatusRouter({ pool }));
 
-// =======================
-// Sincronización periódica
-// =======================
-
+/*
 async function syncProductsToDb() {
   try {
     console.log("🔄 Sincronizando productos desde BC a la DB...");
@@ -223,62 +200,18 @@ async function syncIntercambiosToDb() {
   } catch (err) {
     console.error("❌ Error sincronizando intercambios:", err.message);
   }
-}
+}*/
 
-async function syncOrdersToDb() {
-  try {
-    console.log("🔄 Sincronizando pedidos desde BC a la DB (con líneas JSONB)...");
+// Dependencias
+const ordersRepository = new PgOrdersRepository({ pool });
+const businessCentralOrdersService = new BusinessCentralOrdersService();
 
-    const bcPedidos = await getBcAlbaranes();
 
-    for (const p of bcPedidos) {
-      const no = p.No || p.Document_No || p.documentNo || "SIN_DOC";
-      const customerName = p.SelltoCustomerName || "";
-      const eventName = p.jmtEventName || "";
-      const furnitureLoadDate = p.furnitureLoadDateJMT
-        ? new Date(p.furnitureLoadDateJMT)
-        : null;
-      const jmtStatus = p.jmtStatus || "";
-
-      const lineas = (p.lines || []).map((linea) => ({
-        producto_id: linea.no || linea.No || null,
-        descripcion: linea.description || "",
-        cantidad: linea.quantity || 0,
-      }));
-
-      await pool.query(
-        `
-        INSERT INTO orders (num, sellto_customer_name, furniture_load_date_jmt, jmt_status, lineas, updated_at, jmtEventName)
-        VALUES ($1, $2, $3, $4, $5::jsonb, now(), $6)
-        ON CONFLICT (num)
-        DO UPDATE SET
-          sellto_customer_name = EXCLUDED.sellto_customer_name,
-          furniture_load_date_jmt = EXCLUDED.furniture_load_date_jmt,
-          jmtEventName = EXCLUDED.jmtEventName,
-          lineas = EXCLUDED.lineas,
-          updated_at = now()
-        `,
-        [no, customerName, furnitureLoadDate, jmtStatus, JSON.stringify(lineas), eventName]
-      );
-    }
-
-    console.log(`✅ Sincronización completada: ${bcPedidos.length} pedidos`);
-  } catch (err) {
-    console.error("❌ Error sincronizando pedidos:", err.message);
-  }
-}
-
-// Ejecutar sincronización al arrancar
-syncProductsToDb();
-//syncIntercambiosToDb();
-syncOrdersToDb();
-
-// Cron job: cada 30 minutos
-cron.schedule("*/30 * * * *", () => {
-  //syncProductsToDb();
-  //syncIntercambiosToDb();
-  //syncOrdersToDb();
-});
+// =======================
+// Sincronización periódica
+// =======================
+const syncScheduler = new OrdersSyncScheduler({ ordersRepository, businessCentralOrdersService });
+syncScheduler.start();
 
 // =======================
 // Iniciar servidor

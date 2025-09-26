@@ -1,8 +1,14 @@
 class OrdersRepository {
-    // Debe retornar una lista de entidades Orders
-    async listAll() {
+  
+  // Must return a list of entities Orders
+  async listAll() {
       throw new Error("Not implemented");
-    }
+  }
+
+  // Must save an entity Orders
+  async save(order) {
+    throw new Error("Method not implemented");
+  }
 }
 
 module.exports = OrdersRepository;
