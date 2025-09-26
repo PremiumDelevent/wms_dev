@@ -30,29 +30,37 @@ backend/
 |          └── ReturnStatusRepository.js
 |          └── ShipOrderRepository.js
 |          └── ShipStatusRepository.js
+|
 ├── application/use-cases    # Casos de uso y servicios
 |     └── IncidentStatusUseCase.js
-      └── ListIntercambiosUseCase.js
-      └── ListOrdersUseCase.js
-      └── ListProductsUseCase.js
-      └── ReturnOrderUseCase.js
-      └── ReturnStatusUseCase.js
-      └── ShipOrderUseCase.js
-      └── ShipStatusStatusUseCase.js
+|     └── ListIntercambiosUseCase.js
+|     └── ListOrdersUseCase.js
+|     └── ListProductsUseCase.js
+|     └── ReturnOrderUseCase.js
+|     └── ReturnStatusUseCase.js
+|     └── ShipOrderUseCase.js
+|     └── ShipStatusStatusUseCase.js
+|     └── SyncOrdersUseCase.js
+|
 ├── infrastructure/ # Adaptadores, persistencia y APIs externas
-      └── api/http/routes
-          ...
-      └── database/pg
-            └── PgIncidentStatusRespository.js
-            └── PgIntercambiosRepository.js
-            └── PgOrdersRepository.js
-            └── PgProductRepository.js
-            └── PgReturnOrderRepository.js
-            └── PgReturnStatusRepository.js
-            └── PgReturnOrderRepository.js
-            └── PgShipOrderRepository.js
-            └── PgShipStatusRepository.js
-├── server.js       # Entrada principal
+|      └── api/http/routes
+|          ...
+|      └── database/pg
+|            └── PgIncidentStatusRespository.js
+|            └── PgIntercambiosRepository.js
+|            └── PgOrdersRepository.js
+|            └── PgProductRepository.js
+|            └── PgReturnOrderRepository.js
+|            └── PgReturnStatusRepository.js
+|            └── PgReturnOrderRepository.js
+|            └── PgShipOrderRepository.js
+|            └── PgShipStatusRepository.js
+|      └── external
+|            └── BusinessCentralOrdersService.js
+|      └── scheduler
+|            └── OrdersSyncScheduler.js
+|
+├── server.js       
 └── ...
 ```
 
@@ -147,7 +155,7 @@ CREATE TABLE intercambios (
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     num VARCHAR(50) UNIQUE NOT NULL,         -- Número de pedido en BC
-    sellto_customer_name TEXT NOT NULL,      -- Cliente
+    sellto_customer_name TEXT,      -- Cliente
     furniture_load_date_jmt TIMESTAMP NULL,  -- Fecha de carga
     jmt_status VARCHAR(50),                  -- Estado
     lineas JSONB NOT NULL DEFAULT '[]',      -- Array JSON con artículos
