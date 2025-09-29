@@ -11,9 +11,9 @@ function createShipStatusRouter({ pool }) {
     try {
       const shipStatusRepository = new PgShipStatusRepository({ pool });
       const useCase = new ShipStatusUseCase({ shipStatusRepository });
-      const { pedidoId } = req.body;
+      const { orderId } = req.body;
 
-      const result = await useCase.execute(pedidoId);
+      const result = await useCase.execute(orderId);
 
       res.status(200).json({
         message: "✅ Status actualizado correctamente",

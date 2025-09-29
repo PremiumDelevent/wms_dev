@@ -90,7 +90,7 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pedidoId: order.id,
+          orderId: order.id,
           productos: order.lineas.map((linea, i) => ({
             producto_id: linea.producto_id,
             descripcion: linea.descripcion,
@@ -119,7 +119,7 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pedidoId: order.id }), // ⬅️ directo
+      body: JSON.stringify({ orderId: order.id }), // ⬅️ directo
     });
 
     const data = await res.json().catch(() => null);
@@ -142,7 +142,7 @@ const registrarIncidencia = async () => {
     const res = await fetch("http://localhost:4000/api/incident-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pedidoId: order.id }),
+      body: JSON.stringify({ orderId: order.id }),
     });
 
     const data = await res.json().catch(() => null);
