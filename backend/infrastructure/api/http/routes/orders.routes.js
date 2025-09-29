@@ -15,10 +15,10 @@ function createOrdersRouter({ pool }) {
       const orders = await listOrdersUseCase.execute();
       res.json(orders);
     } catch (error) {
-      console.error("❌ Error obteniendo pedidos desde DB (hex):", error.message);
+      console.error("❌ Error obteniendo orders desde DB (hex):", error.message);
       res
         .status(500)
-        .json({ error: "Error obteniendo pedidos desde la base de datos" });
+        .json({ error: "Error obteniendo orders desde la base de datos" });
     }
   });
 

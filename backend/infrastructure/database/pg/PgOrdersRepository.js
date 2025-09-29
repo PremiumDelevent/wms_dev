@@ -1,5 +1,5 @@
 const OrdersRepository = require("../../../domain/ports/OrdersRepository");
-const Orders = require("../../../domain/entities/Order");
+const Order = require("../../../domain/entities/Order");
 
 class PgOrdersRepository extends OrdersRepository {
     constructor({ pool }) {
@@ -15,7 +15,7 @@ class PgOrdersRepository extends OrdersRepository {
 
         return rows.map(
             (r) => 
-                new Orders({
+                new Order({
                     id: r.id,
                     num: r.num,
                     sellto_customer_name: r.sellto_customer_name,
