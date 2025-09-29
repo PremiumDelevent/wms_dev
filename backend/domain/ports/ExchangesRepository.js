@@ -1,4 +1,4 @@
-class IntercambiosRepository {
+class ExchangesRepository {
   
     // Must return a list of entities Exchange
     async listAll() {
@@ -11,4 +11,4 @@ class IntercambiosRepository {
     }
 }
 
-module.exports = IntercambiosRepository;
+module.exports = ExchangesRepository;

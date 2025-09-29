@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-interface Intercambio {
+interface Exchange {
   id: number;
   documentno: string;
   description: string;
@@ -8,27 +8,26 @@ interface Intercambio {
   shortcut_dimension_1_code: string;
 }
 
-function Intercambios() {
-  const [intercambios, setIntercambios] = useState<Intercambio[]>([]);
+function Exchanges() {
+  const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/intercambios-db")
+    fetch("http://localhost:4000/api/exchanges-db")
       .then((res) => res.json())
-      .then((data: Intercambio[]) => {
-        console.log(data);
-        setIntercambios(data);
+      .then((data: Exchange[]) => {
+        setExchanges(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("❌ Error cargando intercambios:", err);
+        console.error("❌ Error cargando exchanges:", err);
         setLoading(false);
       });
   }, []);
 
   return (
     <div className="container-1">
-      <h1>Intercambios - WMS PREMIUM DELEVENT</h1>
+      <h1>Exchanges - WMS PREMIUM DELEVENT</h1>
 
       {loading ? (
         <div style={{ textAlign: "center", marginTop: "40px" }}>
@@ -65,7 +64,7 @@ function Intercambios() {
             </tr>
           </thead>
           <tbody>
-            {intercambios
+            {exchanges
               .filter(
                 (line) =>
                   line.location_code?.slice(2) !==
@@ -87,4 +86,4 @@ function Intercambios() {
   );
 }
 
-export default Intercambios;
+export default Exchanges;

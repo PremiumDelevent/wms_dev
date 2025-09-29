@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import Header from './Header.tsx'
 import Stock from './Stock.tsx'
-import Intercambios from './Intercambios.tsx'
+import Exchanges from './Exchanges.tsx'
 import Pedidos from './Pedidos.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
@@ -18,8 +18,8 @@ const router = createBrowserRouter([
     element: <Stock />,
   },
   {
-    path: '/intercambios',
-    element: <Intercambios />,
+    path: '/exchanges',
+    element: <Exchanges />,
   },
   {
     path: '/pedidos',

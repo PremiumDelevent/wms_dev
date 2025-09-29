@@ -13,7 +13,7 @@ const bodyParser = require("body-parser");
 // =======================
 const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
 const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
-const createIntercambiosRouter = require("./infrastructure/api/http/routes/intercambios.routes");
+const createExchangesRouter = require("./infrastructure/api/http/routes/exchanges.routes");
 const createOrdersRouter = require("./infrastructure/api/http/routes/orders.routes");
 const createReturnOrderRouter = require("./infrastructure/api/http/routes/return-order.routes");
 const createShipOrderRouter = require("./infrastructure/api/http/routes/ship-order.routes");
@@ -28,7 +28,7 @@ const PgOrdersRepository = require("./infrastructure/database/pg/PgOrdersReposit
 const BusinessCentralOrdersService = require("./infrastructure/external/BusinessCentralOrdersService");
 const PgProductRepository = require("./infrastructure/database/pg/PgProductRepository");
 const BusinessCentralProductsService = require("./infrastructure/external/BusinessCentralProductsService");
-const PgIntercambiosRepository = require("./infrastructure/database/pg/PgIntercambiosRepository");
+const PgExchangesRepository = require("./infrastructure/database/pg/PgExchangesRepository");
 const BusinessCentralExchangesService = require("./infrastructure/external/BusinessCentralExchangesService");
 
 
@@ -73,8 +73,8 @@ app.use("/api", createHelloRouter());
 // Router hexagonal /api/products-db
 app.use("/api", createProductsRouter({ pool }));
 
-// Router hexagonal /api/intercambios-db
-app.use("/api", createIntercambiosRouter({ pool }));
+// Router hexagonal /api/exchanges-db
+app.use("/api", createExchangesRouter({ pool }));
 
 // Router hexagonal /api/orders-db
 app.use("/api", createOrdersRouter({ pool }));
@@ -99,7 +99,7 @@ const ordersRepository = new PgOrdersRepository({ pool });
 const businessCentralOrdersService = new BusinessCentralOrdersService();
 const productRepository = new PgProductRepository({ pool });
 const businessCentralProductsService = new BusinessCentralProductsService();
-const exchangesRepository = new PgIntercambiosRepository({ pool });
+const exchangesRepository = new PgExchangesRepository({ pool });
 const businessCentralExchangesService = new BusinessCentralExchangesService();
 
 // =======================

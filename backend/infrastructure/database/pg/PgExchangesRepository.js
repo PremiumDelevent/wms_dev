@@ -1,7 +1,7 @@
-const IntercambiosRepository = require("../../../domain/ports/IntercambiosRepository");
+const ExchangesRepository = require("../../../domain/ports/ExchangesRepository");
 const Exchange = require("../../../domain/entities/Exchange");
 
-class PgIntercambiosRepository extends IntercambiosRepository {
+class PgExchangesRepository extends ExchangesRepository {
     constructor({ pool }) {
         super();
         this.pool = pool;
@@ -10,7 +10,7 @@ class PgIntercambiosRepository extends IntercambiosRepository {
     async listAll() {   
 
         const {rows} = await this.pool.query(
-            "SELECT id, documentno, description, location_code, shortcut_dimension_1_code FROM intercambios ORDER BY id ASC"
+            "SELECT id, documentno, description, location_code, shortcut_dimension_1_code FROM exchanges ORDER BY id ASC"
         );
 
         return rows.map(
@@ -27,7 +27,7 @@ class PgIntercambiosRepository extends IntercambiosRepository {
 
     async save(exchange) {
         await this.pool.query(
-            `INSERT INTO intercambios (documentno, description, location_code, shortcut_dimension_1_code) 
+            `INSERT INTO exchanges (documentno, description, location_code, shortcut_dimension_1_code) 
             VALUES ($1, $2, $3, $4)
             ON CONFLICT (id)
             DO UPDATE SET
@@ -41,4 +41,4 @@ class PgIntercambiosRepository extends IntercambiosRepository {
 }
 
 
-module.exports = PgIntercambiosRepository;
+module.exports = PgExchangesRepository;
