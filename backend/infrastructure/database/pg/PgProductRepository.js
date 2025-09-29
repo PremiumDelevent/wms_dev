@@ -23,6 +23,16 @@ class PgProductRepository extends ProductRepository {
         })
     );
   }
+
+  async save(product) {
+    await this.pool.query(
+      `INSERT INTO products (id, name, category, stock)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (id)
+      DO UPDATE SET name = EXCLUDED.name, category = EXCLUDED.category`,
+      [product.id, product.name, product.category, 0]
+    );
+  }
 }
 
 module.exports = PgProductRepository;

@@ -26,11 +26,14 @@ const createIncidentStatusRouter = require("./infrastructure/api/http/routes/inc
 // =======================  
 const PgOrdersRepository = require("./infrastructure/database/pg/PgOrdersRepository");
 const BusinessCentralOrdersService = require("./infrastructure/external/BusinessCentralOrdersService");
+const PgProductRepository = require("./infrastructure/database/pg/PgProductRepository");
+const BusinessCentralProductsService = require("./infrastructure/external/BusinessCentralProductsService");
 
 // =======================
 // Schedulers
 // =======================
 const OrdersSyncScheduler = require("./infrastructure/scheduler/OrdersSyncScheduler");
+const ProductsSyncScheduler = require("./infrastructure/scheduler/ProductsSyncScheduler");
 
 // =======================
 // App setup
@@ -71,24 +74,6 @@ const pool = new Pool({
 // =======================
 // Funciones Business Central
 // =======================
-
-
-async function getBcProducts() {
-  const token = await getBcAccessToken();
-  if (!token) return [];
-  const url = `https://api.businesscentral.dynamics.com/v2.0/${tenantId}/${bcEnvironment}/api/v2.0/companies(${companyId})/items`;
-
-  try {
-    const response = await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-      timeout: 60000,
-    });
-    return response.data.value || [];
-  } catch (error) {
-    console.error("❌ Error obteniendo productos:", error.response?.data || error.message);
-    return [];
-  }
-}
 
 async function getBcSalesLines() {
   const token = await getBcAccessToken();
@@ -145,30 +130,6 @@ app.use("/api", createReturnStatusRouter({ pool }));
 app.use("/api", createIncidentStatusRouter({ pool }));
 
 /*
-async function syncProductsToDb() {
-  try {
-    console.log("🔄 Sincronizando productos desde BC a la DB...");
-    const bcProducts = await getBcProducts();
-
-    for (const p of bcProducts) {
-      const { displayName, number, itemCategoryCode } = p;
-
-      await pool.query(
-        `
-        INSERT INTO products (id, name, category, stock)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (id)
-        DO UPDATE SET name = EXCLUDED.name, category = EXCLUDED.category
-        `,
-        [number, displayName, itemCategoryCode, 0]
-      );
-    }
-
-    console.log(`✅ Sincronización completada: ${bcProducts.length} productos`);
-  } catch (err) {
-    console.error("❌ Error sincronizando productos:", err.message);
-  }
-}
 
 async function syncIntercambiosToDb() {
   try {
@@ -205,13 +166,16 @@ async function syncIntercambiosToDb() {
 // Dependencias
 const ordersRepository = new PgOrdersRepository({ pool });
 const businessCentralOrdersService = new BusinessCentralOrdersService();
-
+const productRepository = new PgProductRepository({ pool });
+const businessCentralProductsService = new BusinessCentralProductsService();
 
 // =======================
 // Sincronización periódica
 // =======================
 const syncScheduler = new OrdersSyncScheduler({ ordersRepository, businessCentralOrdersService });
+const syncProductsScheduler = new ProductsSyncScheduler({ productRepository, businessCentralProductsService });
 syncScheduler.start();
+syncProductsScheduler.start();
 
 // =======================
 // Iniciar servidor
