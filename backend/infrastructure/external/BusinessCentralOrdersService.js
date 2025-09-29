@@ -1,5 +1,5 @@
 const axios = require("axios");
-const Orders = require("../../domain/entities/Orders");
+const Order = require("../../domain/entities/Order");
 
 class BusinessCentralOrdersService {
   constructor() {
@@ -51,7 +51,7 @@ class BusinessCentralOrdersService {
                 cantidad: line.quantity || 0
             }));
 
-            return new Orders({
+            return new Order({
                 num: o.No || o.Document_No || o.documentNo || "SIN_DOC",
                 sellto_customer_name: o.SelltoCustomerName || "SIN_NOMBRE",
                 furniture_load_date_jmt: o.furnitureLoadDateJMT ? new Date(o.furnitureLoadDateJMT) : null,

@@ -10,7 +10,7 @@ interface Linea {
   cantidad: number;
 }
 
-interface Pedido {
+interface Order {
   id: number;
   num: string;
   sellto_customer_name: string;
@@ -20,10 +20,10 @@ interface Pedido {
   lineas: Linea[];
 }
 
-interface PedidoPopupProps {
-  pedido: Pedido | null;
-  titulo: string;
-  tipoAccion: "ship" | "return";
+interface OrderPopupProps {
+  order: Order | null;
+  title: string;
+  typeAction: "ship" | "return";
   onClose: () => void;
 }
 
@@ -72,17 +72,17 @@ const LineaItem = ({ linea, cantidad, setCantidad }: LineaItemProps) => (
   </li>
 );
 
-function PedidoPopup({ pedido, titulo, tipoAccion, onClose }: PedidoPopupProps) {
+function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
   // ✅ hooks siempre al inicio
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
-  const [cantidades, setCantidades] = useState<number[]>(pedido?.lineas.map(l => l.cantidad) || []);
+  const [cantidades, setCantidades] = useState<number[]>(order?.lineas.map(l => l.cantidad) || []);
 
-  if (!pedido) return null;
+  if (!order) return null;
 
   const actualizarStock = async () => {
     try {
-      const endpoint = tipoAccion === "ship"
+      const endpoint = typeAction === "ship"
         ? "http://localhost:4000/api/ship-order"
         : "http://localhost:4000/api/return-order";
 
@@ -90,8 +90,8 @@ function PedidoPopup({ pedido, titulo, tipoAccion, onClose }: PedidoPopupProps) 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pedidoId: pedido.id,
-          productos: pedido.lineas.map((linea, i) => ({
+          pedidoId: order.id,
+          productos: order.lineas.map((linea, i) => ({
             producto_id: linea.producto_id,
             descripcion: linea.descripcion,
             cantidad: cantidades[i],
@@ -112,14 +112,14 @@ function PedidoPopup({ pedido, titulo, tipoAccion, onClose }: PedidoPopupProps) 
  const actualizarStatus = async () => {
   try {
     const endpoint =
-      tipoAccion === "ship"
+      typeAction === "ship"
         ? "http://localhost:4000/api/ship-status"
         : "http://localhost:4000/api/return-status";
 
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pedidoId: pedido.id }), // ⬅️ directo
+      body: JSON.stringify({ pedidoId: order.id }), // ⬅️ directo
     });
 
     const data = await res.json().catch(() => null);
@@ -142,7 +142,7 @@ const registrarIncidencia = async () => {
     const res = await fetch("http://localhost:4000/api/incident-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pedidoId: pedido.id }),
+      body: JSON.stringify({ pedidoId: order.id }),
     });
 
     const data = await res.json().catch(() => null);
@@ -182,17 +182,17 @@ const registrarIncidencia = async () => {
         overflowY: "auto",
         boxShadow: "0px 4px 10px rgba(0,0,0,0.3)"
       }}>
-        <h2>{titulo}</h2>
-        <p><strong>Número:</strong> {pedido.num}</p>
-        <p><strong>Cliente:</strong> {pedido.sellto_customer_name}</p>
-        <p><strong>Evento:</strong> {pedido.jmteventname}</p>
-        <p><strong>Fecha carga:</strong> {pedido.furniture_load_date_jmt ? new Date(pedido.furniture_load_date_jmt).toLocaleString() : "-"}</p>
-        <p><strong>Estado:</strong> {pedido.jmt_status}</p>
+        <h2>{title}</h2>
+        <p><strong>Número:</strong> {order.num}</p>
+        <p><strong>Cliente:</strong> {order.sellto_customer_name}</p>
+        <p><strong>Evento:</strong> {order.jmteventname}</p>
+        <p><strong>Fecha carga:</strong> {order.furniture_load_date_jmt ? new Date(order.furniture_load_date_jmt).toLocaleString() : "-"}</p>
+        <p><strong>Estado:</strong> {order.jmt_status}</p>
 
         <h3>Artículos</h3>
-        {pedido.lineas.length > 0 ? (
+        {order.lineas.length > 0 ? (
           <ul>
-            {pedido.lineas.map((linea, i) => (
+            {order.lineas.map((linea, i) => (
               <LineaItem
                 key={i}
                 linea={linea}
@@ -212,8 +212,8 @@ const registrarIncidencia = async () => {
         <button onClick={async () => { 
           actualizarStock(); 
           actualizarStatus();
-          if (tipoAccion === "return") {
-            const hayIncidencias = pedido.lineas.some(
+          if (typeAction === "return") {
+            const hayIncidencias = order.lineas.some(
               (linea, i) => cantidades[i] !== linea.cantidad
             );
 
@@ -231,7 +231,7 @@ const registrarIncidencia = async () => {
           cursor: "pointer",
           marginRight: "10px"
         }}>
-          {tipoAccion === "ship" ? "Confirmar envío" : "Confirmar entrada"}
+          {typeAction === "ship" ? "Confirmar envío" : "Confirmar entrada"}
         </button>
 
         <button onClick={onClose} style={{
@@ -251,42 +251,42 @@ const registrarIncidencia = async () => {
 }
 
 // =======================
-// Componente principal Pedidos
+// Componente principal Orders
 // =======================
-function Pedidos() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+function Orders() {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [popupPedido, setPopupPedido] = useState<Pedido | null>(null);
-  const [popupTitulo, setPopupTitulo] = useState<string>("");
-  const [popupAccion, setPopupAccion] = useState<"ship" | "return">("ship");
+  const [popupOrder, setPopupOrder] = useState<Order | null>(null);
+  const [popupTitle, setPopupTitle] = useState<string>("");
+  const [popupTypeAction, setPopupTypeAction] = useState<"ship" | "return">("ship");
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPedidos = async () => {
+    const fetchOrders = async () => {
       setLoading(true);
       try {
         const res = await fetch("http://localhost:4000/api/orders-db");
-        const data: Pedido[] = await res.json();
-        setPedidos(data);
+        const data: Order[] = await res.json();
+        setOrders(data);
       } catch (err) {
-        console.error("❌ Error cargando pedidos:", err);
+        console.error("❌ Error cargando orders:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchPedidos();
+    fetchOrders();
   }, []);
 
-  const openPopup = (pedido: Pedido, titulo: string, tipoAccion: "ship" | "return") => {
-    setPopupPedido(pedido);
-    setPopupTitulo(titulo);
-    setPopupAccion(tipoAccion);
+  const openPopup = (order: Order, title: string, typeAction: "ship" | "return") => {
+    setPopupOrder(order);
+    setPopupTitle(title);
+    setPopupTypeAction(typeAction);
   };
 
   const closePopup = () => {
-    setPopupPedido(null);
-    setPopupTitulo("");
+    setPopupOrder(null);
+    setPopupTitle("");
   };
 
   return (
@@ -303,12 +303,12 @@ function Pedidos() {
         ← Volver al inicio
       </button>
 
-      <h1>Pedidos - WMS PREMIUM DELEVENT</h1>
+      <h1>Orders - WMS PREMIUM DELEVENT</h1>
 
       {loading ? (
-        <p>Cargando pedidos...</p>
-      ) : pedidos.length === 0 ? (
-        <p>No hay pedidos disponibles.</p>
+        <p>Cargando orders...</p>
+      ) : orders.length === 0 ? (
+        <p>No hay orders disponibles.</p>
       ) : (
         <table border={1} cellPadding={5} cellSpacing={0}>
           <thead>
@@ -322,16 +322,16 @@ function Pedidos() {
             </tr>
           </thead>
           <tbody>
-            {pedidos.map((pedido) => (
-              <tr key={pedido.id}>
-                <td>{pedido.num}</td>
-                <td>{pedido.sellto_customer_name}</td>
-                <td>{pedido.jmteventname}</td>
-                <td>{pedido.furniture_load_date_jmt ? new Date(pedido.furniture_load_date_jmt).toLocaleString() : "-"}</td>
-                <td>{pedido.jmt_status}</td>
+            {orders.map((order) => (
+              <tr key={order.id}>
+                <td>{order.num}</td>
+                <td>{order.sellto_customer_name}</td>
+                <td>{order.jmteventname}</td>
+                <td>{order.furniture_load_date_jmt ? new Date(order.furniture_load_date_jmt).toLocaleString() : "-"}</td>
+                <td>{order.jmt_status}</td>
                 <td>
-                  <button onClick={() => openPopup(pedido, "📦 Enviar pedido", "ship")}>Enviar pedido</button>
-                  <button onClick={() => openPopup(pedido, "↩️ Entrada pedido", "return")}>Entrada pedido</button>
+                  <button onClick={() => openPopup(order, "📦 Enviar order", "ship")}>Enviar order</button>
+                  <button onClick={() => openPopup(order, "↩️ Entrada order", "return")}>Entrada order</button>
                 </td>
               </tr>
             ))}
@@ -339,12 +339,12 @@ function Pedidos() {
         </table>
       )}
 
-      {popupPedido && (
-        <PedidoPopup pedido={popupPedido} titulo={popupTitulo} tipoAccion={popupAccion} onClose={closePopup} />
+      {popupOrder && (
+        <OrderPopup order={popupOrder} title={popupTitle} typeAction={popupTypeAction} onClose={closePopup} />
       )}
     </div>
   );
 }
 
 // ✅ Export final
-export default Pedidos;
+export default Orders;

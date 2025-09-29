@@ -1,4 +1,4 @@
-class Orders {
+class Order {
   constructor({ id, num, sellto_customer_name, furniture_load_date_jmt, jmt_status, jmteventname, lineas }) {
     this.id = id;
     this.num = num;
@@ -19,4 +19,4 @@ class Orders {
 
 }
 
-module.exports = Orders;
+module.exports = Order;

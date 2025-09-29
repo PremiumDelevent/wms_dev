@@ -5,7 +5,7 @@ import App from './App.tsx'
 import Header from './Header.tsx'
 import Stock from './Stock.tsx'
 import Exchanges from './Exchanges.tsx'
-import Pedidos from './Pedidos.tsx'
+import Orders from './Orders.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 const router = createBrowserRouter([
@@ -22,8 +22,8 @@ const router = createBrowserRouter([
     element: <Exchanges />,
   },
   {
-    path: '/pedidos',
-    element: <Pedidos />,
+    path: '/orders',
+    element: <Orders />,
   }
 ]);
 
