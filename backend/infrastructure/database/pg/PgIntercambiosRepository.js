@@ -1,5 +1,5 @@
 const IntercambiosRepository = require("../../../domain/ports/IntercambiosRepository");
-const Intercambio = require("../../../domain/entities/Intercambios");
+const Exchange = require("../../../domain/entities/Exchange");
 
 class PgIntercambiosRepository extends IntercambiosRepository {
     constructor({ pool }) {
@@ -15,13 +15,27 @@ class PgIntercambiosRepository extends IntercambiosRepository {
 
         return rows.map(
             (r) => 
-                new Intercambio({
+                new Exchange({
                     id: r.id,
                     documentno: r.documentno,
                     description: r.description,
                     location_code: r.location_code,
                     shortcut_dimension_1_code: r.shortcut_dimension_1_code
                 })
+        );
+    }
+
+    async save(exchange) {
+        await this.pool.query(
+            `INSERT INTO intercambios (documentno, description, location_code, shortcut_dimension_1_code) 
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (id)
+            DO UPDATE SET
+                documentno = EXCLUDED.documentno,
+                description = EXCLUDED.description,
+                location_code = EXCLUDED.location_code,
+                shortcut_dimension_1_code = EXCLUDED.shortcut_dimension_1_code`,
+            [exchange.documentno || "SIN_DOC", exchange.description , exchange.location_code , exchange.shortcut_dimension_1_code]
         );
     }
 }

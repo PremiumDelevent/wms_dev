@@ -1,10 +1,10 @@
 //=======================
 // Requirements
 //=======================
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const axios = require("axios");
 const { Pool } = require("pg");
 const bodyParser = require("body-parser");
 
@@ -28,12 +28,16 @@ const PgOrdersRepository = require("./infrastructure/database/pg/PgOrdersReposit
 const BusinessCentralOrdersService = require("./infrastructure/external/BusinessCentralOrdersService");
 const PgProductRepository = require("./infrastructure/database/pg/PgProductRepository");
 const BusinessCentralProductsService = require("./infrastructure/external/BusinessCentralProductsService");
+const PgIntercambiosRepository = require("./infrastructure/database/pg/PgIntercambiosRepository");
+const BusinessCentralExchangesService = require("./infrastructure/external/BusinessCentralExchangesService");
+
 
 // =======================
 // Schedulers
 // =======================
 const OrdersSyncScheduler = require("./infrastructure/scheduler/OrdersSyncScheduler");
 const ProductsSyncScheduler = require("./infrastructure/scheduler/ProductsSyncScheduler");
+const ExchangesSyncScheduler = require("./infrastructure/scheduler/ExchangesSyncScheduler");
 
 // =======================
 // App setup
@@ -43,54 +47,15 @@ app.use(bodyParser.json());
 const PORT = process.env.PORT || 4000;
 
 // =======================
-// Variables de entorno BC
-// =======================
-const tenantId = process.env.TENANT_ID;
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
-const bcEnvironment = process.env.BC_ENVIRONMENT;
-const companyId = process.env.BC_COMPANY_ID;
-
-// =======================
-// Variables de entorno DB
-// =======================
-const dbUser = process.env.DB_USER;
-const dbHost = process.env.DB_HOST;
-const dbName = process.env.DB_NAME;
-const dbPassword = process.env.DB_PASSWORD;
-const dbPort = process.env.DB_PORT;
-
-// =======================
 // Pool de conexión PostgreSQL
 // =======================
 const pool = new Pool({
-  user: dbUser,
-  host: dbHost,
-  database: dbName,
-  password: dbPassword,
-  port: dbPort,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
-
-// =======================
-// Funciones Business Central
-// =======================
-
-async function getBcSalesLines() {
-  const token = await getBcAccessToken();
-  if (!token) return [];
-  const url = `https://api.businesscentral.dynamics.com/v2.0/${tenantId}/${bcEnvironment}/ODataV4/Company('JMT%20PREMIUM%20DELEVENT%20S.L')/PDDetalleL%C3%ADneasPedidosVenta`;
-
-  try {
-    const response = await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-      timeout: 60000,
-    });
-    return response.data.value || [];
-  } catch (error) {
-    console.error("❌ Error obteniendo líneas de venta:", error.response?.data || error.message);
-    return [];
-  }
-}
 
 // =======================
 // Middleware
@@ -129,53 +94,27 @@ app.use("/api", createReturnStatusRouter({ pool }));
 // Router hexagonal /api/incident-status
 app.use("/api", createIncidentStatusRouter({ pool }));
 
-/*
-
-async function syncIntercambiosToDb() {
-  try {
-    console.log("🔄 Sincronizando intercambios desde BC a la DB...");
-    const bcIntercambios = await getBcSalesLines();
-
-    for (const p of bcIntercambios) {
-      const documentNo = p.Document_No || p.documentNo || "SIN_DOC";
-      const description = p.Description || "";
-      const locationCode = p.Location_Code || "";
-      const shortcutDim = p.Shortcut_Dimension_1_Code || "";
-
-      await pool.query(
-        `
-        INSERT INTO intercambios (documentNo, description, location_code, shortcut_dimension_1_code)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (id)
-        DO UPDATE SET 
-          documentNo = EXCLUDED.documentNo,
-          description = EXCLUDED.description,
-          location_code = EXCLUDED.location_code,
-          shortcut_dimension_1_code = EXCLUDED.shortcut_dimension_1_code
-        `,
-        [documentNo, description, locationCode, shortcutDim]
-      );
-    }
-
-    console.log(`✅ Sincronización completada: ${bcIntercambios.length} intercambios`);
-  } catch (err) {
-    console.error("❌ Error sincronizando intercambios:", err.message);
-  }
-}*/
-
 // Dependencias
 const ordersRepository = new PgOrdersRepository({ pool });
 const businessCentralOrdersService = new BusinessCentralOrdersService();
 const productRepository = new PgProductRepository({ pool });
 const businessCentralProductsService = new BusinessCentralProductsService();
+const exchangesRepository = new PgIntercambiosRepository({ pool });
+const businessCentralExchangesService = new BusinessCentralExchangesService();
+
+// =======================
+// Schedulers
+// =======================
+const syncScheduler = new OrdersSyncScheduler({ ordersRepository, businessCentralOrdersService });
+const syncProductsScheduler = new ProductsSyncScheduler({ productRepository, businessCentralProductsService });
+const syncExchangesScheduler = new ExchangesSyncScheduler({ exchangesRepository, businessCentralExchangesService });
 
 // =======================
 // Sincronización periódica
 // =======================
-const syncScheduler = new OrdersSyncScheduler({ ordersRepository, businessCentralOrdersService });
-const syncProductsScheduler = new ProductsSyncScheduler({ productRepository, businessCentralProductsService });
 syncScheduler.start();
 syncProductsScheduler.start();
+syncExchangesScheduler.start();
 
 // =======================
 // Iniciar servidor

@@ -1,4 +1,4 @@
-class Intercambios {
+class Exchange {
     constructor({ id, documentno, description, location_code, shortcut_dimension_1_code }) {
       this.id = id;
       this.documentno = documentno;
@@ -8,4 +8,4 @@ class Intercambios {
     }
 }
 
-module.exports = Intercambios;
+module.exports = Exchange;
