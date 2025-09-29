@@ -19,11 +19,11 @@ backend/
 ├── domain/         # Entidades y lógica de negocio
 |     └── entities/
 │         └── Order.js   
-|         └── Intercambios.js
+|         └── Exchange.js
 |         └── Product.js    
 |     └── ports/
 │          └── IncidentStatusRespository.js 
-|          └── IntercambiosRepository.js 
+|          └── ExchangeRepository.js 
 |          └── OrdersRepository.js 
 |          └── ProductRepository.js 
 |          └── ReturnOrderRepository.js 
@@ -33,7 +33,7 @@ backend/
 |
 ├── application/use-cases    # Casos de uso y servicios
 |     └── IncidentStatusUseCase.js
-|     └── ListIntercambiosUseCase.js
+|     └── ListExchangesUseCase.js
 |     └── ListOrdersUseCase.js
 |     └── ListProductsUseCase.js
 |     └── ReturnOrderUseCase.js
@@ -41,13 +41,15 @@ backend/
 |     └── ShipOrderUseCase.js
 |     └── ShipStatusStatusUseCase.js
 |     └── SyncOrdersUseCase.js
+|     └── SyncExchangesUseCase.js
+|     └── SyncProductsUseCase.js
 |
 ├── infrastructure/ # Adaptadores, persistencia y APIs externas
 |      └── api/http/routes
 |          ...
 |      └── database/pg
 |            └── PgIncidentStatusRespository.js
-|            └── PgIntercambiosRepository.js
+|            └── PgExchangesRepository.js
 |            └── PgOrdersRepository.js
 |            └── PgProductRepository.js
 |            └── PgReturnOrderRepository.js
@@ -57,8 +59,12 @@ backend/
 |            └── PgShipStatusRepository.js
 |      └── external
 |            └── BusinessCentralOrdersService.js
+|            └── BusinessCentralExchangesService.js
+|            └── BusinessCentralProductsService.js
 |      └── scheduler
 |            └── OrdersSyncScheduler.js
+|            └── ExchangesSyncScheduler.js
+|            └── ProductsSyncScheduler.js
 |
 ├── server.js       
 └── ...
@@ -99,7 +105,7 @@ Endpoints disponibles:
 
 /api/products-db → productos desde PostgreSQL (stock real)
 
-/api/intercambios-db
+/api/exchanges-db
 
 /api/orders-db
 
@@ -144,7 +150,7 @@ CREATE TABLE products (
   stock INT DEFAULT 0
 );
 
-CREATE TABLE intercambios (
+CREATE TABLE exchanges (
   id SERIAL PRIMARY KEY,                          -- id autoincremental local
   documentNo VARCHAR(50) NOT NULL,                -- nº documento de BC      
   description TEXT,
@@ -153,17 +159,16 @@ CREATE TABLE intercambios (
 );
 
 CREATE TABLE orders (
-    id SERIAL PRIMARY KEY,
-    num VARCHAR(50) UNIQUE NOT NULL,         -- Número de pedido en BC
-    sellto_customer_name TEXT,      -- Cliente
-    furniture_load_date_jmt TIMESTAMP NULL,  -- Fecha de carga
-    jmt_status VARCHAR(50),                  -- Estado
-    lineas JSONB NOT NULL DEFAULT '[]',      -- Array JSON con artículos
-    created_at TIMESTAMP DEFAULT now(),
-    updated_at TIMESTAMP DEFAULT now()
+  id SERIAL PRIMARY KEY,
+  num VARCHAR(50) UNIQUE NOT NULL,         -- Número de pedido en BC
+  sellto_customer_name TEXT,               -- Cliente
+  furniture_load_date_jmt TIMESTAMP NULL,  -- Fecha de carga
+  jmt_status VARCHAR(50),                  -- Estado
+  lineas JSONB NOT NULL DEFAULT '[]',      -- Array JSON con artículos
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now(),
+  jmtEventName VARCHAR(255)
 );
-
-alter table orders add jmtEventName varchar(255);
 
 -- Índices útiles
 CREATE INDEX idx_orders_num ON orders(num);
