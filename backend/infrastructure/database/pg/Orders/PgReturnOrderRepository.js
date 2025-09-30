@@ -1,4 +1,4 @@
-const ReturnOrderRepository = require("../../../domain/ports/ReturnOrderRepository");
+const ReturnOrderRepository = require("../../../../domain/ports/ReturnOrderRepository");
 
 class PgReturnOrderRepository extends ReturnOrderRepository {
   constructor({ pool }) {

@@ -25,11 +25,11 @@ const createIncidentsRouter = require("./infrastructure/api/http/routes/incident
 // =======================
 // PG y Servicios
 // =======================  
-const PgOrdersRepository = require("./infrastructure/database/pg/PgOrdersRepository");
+const PgOrdersRepository = require("./infrastructure/database/pg/Orders/PgOrdersRepository");
 const BusinessCentralOrdersService = require("./infrastructure/external/BusinessCentralOrdersService");
-const PgProductRepository = require("./infrastructure/database/pg/PgProductRepository");
+const PgProductRepository = require("./infrastructure/database/pg/Products/PgProductRepository");
 const BusinessCentralProductsService = require("./infrastructure/external/BusinessCentralProductsService");
-const PgExchangesRepository = require("./infrastructure/database/pg/PgExchangesRepository");
+const PgExchangesRepository = require("./infrastructure/database/pg/Exchanges/PgExchangesRepository");
 const BusinessCentralExchangesService = require("./infrastructure/external/BusinessCentralExchangesService");
 
 

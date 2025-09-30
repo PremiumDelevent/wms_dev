@@ -1,5 +1,5 @@
-const ProductRepository = require("../../../domain/ports/ProductRepository");
-const Product = require("../../../domain/entities/Product");
+const ProductRepository = require("../../../../domain/ports/ProductRepository");
+const Product = require("../../../../domain/entities/Product");
 
 class PgProductRepository extends ProductRepository {
   constructor({ pool }) {

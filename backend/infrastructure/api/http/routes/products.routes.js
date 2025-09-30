@@ -1,5 +1,5 @@
 const express = require("express");
-const PgProductRepository = require("../../../database/pg/PgProductRepository");
+const PgProductRepository = require("../../../database/pg/Products/PgProductRepository");
 const ListProductsUseCase = require("../../../../application/use-cases/ListProductsUseCase");
 
 function createProductsRouter({ pool }) {

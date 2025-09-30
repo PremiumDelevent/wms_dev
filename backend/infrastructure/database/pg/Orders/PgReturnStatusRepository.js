@@ -1,6 +1,6 @@
-const ShipStatusRepository = require("../../../domain/ports/ShipStatusRepository");
+const ReturnStatusRepository = require("../../../../domain/ports/ReturnStatusRepository");
 
-class PgShipStatusRepository extends ShipStatusRepository {
+class PgReturnStatusRepository extends ReturnStatusRepository {
   constructor({ pool }) {
     super();
     this.pool = pool;
@@ -11,7 +11,7 @@ class PgShipStatusRepository extends ShipStatusRepository {
     try {
       await client.query("BEGIN");
       await client.query(
-        "UPDATE orders SET jmt_status = 'ENVIADO' WHERE id = $1",
+        "UPDATE orders SET jmt_status = 'DEVUELTO' WHERE id = $1",
         [id]
       );
 
@@ -25,4 +25,4 @@ class PgShipStatusRepository extends ShipStatusRepository {
   }
 }
 
-module.exports = PgShipStatusRepository;
+module.exports = PgReturnStatusRepository;

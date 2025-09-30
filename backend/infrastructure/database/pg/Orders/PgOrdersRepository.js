@@ -1,5 +1,5 @@
-const OrdersRepository = require("../../../domain/ports/OrdersRepository");
-const Order = require("../../../domain/entities/Order");
+const OrdersRepository = require("../../../../domain/ports/OrdersRepository");
+const Order = require("../../../../domain/entities/Order");
 
 class PgOrdersRepository extends OrdersRepository {
     constructor({ pool }) {

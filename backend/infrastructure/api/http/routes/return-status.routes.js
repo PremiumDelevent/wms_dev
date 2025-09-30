@@ -1,5 +1,5 @@
 const express = require("express");
-const PgReturnStatusRepository = require("../../../database/pg/PgReturnStatusRepository");
+const PgReturnStatusRepository = require("../../../database/pg/Orders/PgReturnStatusRepository");
 const ReturnStatusUseCase = require("../../../../application/use-cases/ReturnStatusUseCase");
 
 // POST /api/return-status

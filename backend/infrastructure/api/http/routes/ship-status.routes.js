@@ -1,5 +1,5 @@
 const express = require("express");
-const PgShipStatusRepository = require("../../../database/pg/PgShipStatusRepository");
+const PgShipStatusRepository = require("../../../database/pg/Orders/PgShipStatusRepository");
 const ShipStatusUseCase = require("../../../../application/use-cases/ShipStatusUseCase");
 
 // POST /api/ship-status

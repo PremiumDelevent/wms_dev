@@ -1,5 +1,5 @@
 const express = require("express");
-const PgIncidentsRepository = require("../../../database/pg/PgIncidentsRepository");
+const PgIncidentsRepository = require("../../../database/pg/Incidents/PgIncidentsRepository");
 const ListIncidentsUseCase = require("../../../../application/use-cases/ListIncidentsUseCase");
 
 function createIncidentsRouter({ pool }) {
