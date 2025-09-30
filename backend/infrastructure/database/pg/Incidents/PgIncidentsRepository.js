@@ -26,6 +26,41 @@ class PgIncidentsRepository extends IncidentsRepository {
                 })
         );
     }
+
+    async setIncident(incident) {
+
+        const client = await this.pool.connect();
+
+        try {
+            await client.query("BEGIN");
+            await client.query(
+              `INSERT INTO incidents (num, sellto_customer_name, furniture_load_date_jmt, jmt_status, jmteventname, lineas) 
+                VALUES ($1, $2, $3, $4, $5, $6) 
+                ON CONFLICT (num)
+                DO UPDATE SET
+                    sellto_customer_name = EXCLUDED.sellto_customer_name,
+                    furniture_load_date_jmt = EXCLUDED.furniture_load_date_jmt,
+                    jmt_status = $4,
+                    jmteventname = EXCLUDED.jmteventname,
+                    lineas = EXCLUDED.lineas`,
+              [
+                incident.num,
+                incident.sellto_customer_name,
+                incident.furniture_load_date_jmt,
+                'INCIDENCIA',
+                incident.jmteventname,
+                JSON.stringify(incident.lineas),
+              ]
+            );
+      
+            await client.query("COMMIT");
+          } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+          } finally {
+            client.release();
+          }
+    }
 }
 
 module.exports = PgIncidentsRepository;

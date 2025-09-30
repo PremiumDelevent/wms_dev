@@ -4,6 +4,10 @@ class IncidentsRepository {
     async listAll() {
         throw new Error("Not implemented");
     }
+
+    async setIncident(incident) {
+        throw new Error("Not implemented");
+    }
   }
   
   module.exports = IncidentsRepository;
