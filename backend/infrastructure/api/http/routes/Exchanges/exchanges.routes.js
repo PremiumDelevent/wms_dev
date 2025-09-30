@@ -1,6 +1,6 @@
 const express = require("express");
-const PgExchangesRepository = require("../../../database/pg/Exchanges/PgExchangesRepository");
-const ListExchangesUseCase = require("../../../../application/use-cases/ListExchangesUseCase");
+const PgExchangesRepository = require("../../../../database/pg/Exchanges/PgExchangesRepository");
+const ListExchangesUseCase = require("../../../../../application/use-cases/ListExchangesUseCase");
 
 function createExchangeRouter({ pool }) {
   const router = express.Router();

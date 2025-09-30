@@ -1,6 +1,6 @@
 const express = require("express");
-const PgIncidentStatusRepository = require("../../../database/pg/Incidents/PgIncidentStatusRepository");
-const IncidentStatusUseCase = require("../../../../application/use-cases/IncidentStatusUseCase");
+const PgIncidentStatusRepository = require("../../../../database/pg/Incidents/PgIncidentStatusRepository");
+const IncidentStatusUseCase = require("../../../../../application/use-cases/IncidentStatusUseCase");
 
 // POST /api/incident-status
 

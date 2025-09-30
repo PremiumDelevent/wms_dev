@@ -11,16 +11,16 @@ const bodyParser = require("body-parser");
 // =======================
 // Routers
 // =======================
-const createHelloRouter = require("./infrastructure/api/http/routes/hello.routes");
-const createProductsRouter = require("./infrastructure/api/http/routes/products.routes");
-const createExchangesRouter = require("./infrastructure/api/http/routes/exchanges.routes");
-const createOrdersRouter = require("./infrastructure/api/http/routes/orders.routes");
-const createReturnOrderRouter = require("./infrastructure/api/http/routes/return-order.routes");
-const createShipOrderRouter = require("./infrastructure/api/http/routes/ship-order.routes");
-const createShipStatusRouter = require("./infrastructure/api/http/routes/ship-status.routes");
-const createReturnStatusRouter = require("./infrastructure/api/http/routes/return-status.routes");
-const createIncidentStatusRouter = require("./infrastructure/api/http/routes/incident-status.routes");
-const createIncidentsRouter = require("./infrastructure/api/http/routes/incidents.routes");
+const createHelloRouter = require("./infrastructure/api/http/routes/Hello/hello.routes");
+const createProductsRouter = require("./infrastructure/api/http/routes/Products/products.routes");
+const createExchangesRouter = require("./infrastructure/api/http/routes/Exchanges/exchanges.routes");
+const createOrdersRouter = require("./infrastructure/api/http/routes/Orders/orders.routes");
+const createReturnOrderRouter = require("./infrastructure/api/http/routes/Orders/return-order.routes");
+const createShipOrderRouter = require("./infrastructure/api/http/routes/Orders/ship-order.routes");
+const createShipStatusRouter = require("./infrastructure/api/http/routes/Orders/ship-status.routes");
+const createReturnStatusRouter = require("./infrastructure/api/http/routes/Orders/return-status.routes");
+const createIncidentStatusRouter = require("./infrastructure/api/http/routes/Orders/incident-status.routes");
+const createIncidentsRouter = require("./infrastructure/api/http/routes/Incidents/incidents.routes");
 
 // =======================
 // PG y Servicios

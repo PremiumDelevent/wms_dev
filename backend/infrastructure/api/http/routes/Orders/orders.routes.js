@@ -1,6 +1,6 @@
 const express = require("express");
-const PgOrdersRepository = require("../../../database/pg/Orders/PgOrdersRepository");
-const ListOrdersUseCase = require("../../../../application/use-cases/ListOrdersUseCase");
+const PgOrdersRepository = require("../../../../database/pg/Orders/PgOrdersRepository");
+const ListOrdersUseCase = require("../../../../../application/use-cases/ListOrdersUseCase");
 
 function createOrdersRouter({ pool }) {
   const router = express.Router();

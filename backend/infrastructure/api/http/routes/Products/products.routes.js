@@ -1,6 +1,6 @@
 const express = require("express");
-const PgProductRepository = require("../../../database/pg/Products/PgProductRepository");
-const ListProductsUseCase = require("../../../../application/use-cases/ListProductsUseCase");
+const PgProductRepository = require("../../../../database/pg/Products/PgProductRepository");
+const ListProductsUseCase = require("../../../../../application/use-cases/ListProductsUseCase");
 
 function createProductsRouter({ pool }) {
   const router = express.Router();
