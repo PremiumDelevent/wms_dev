@@ -1,4 +1,4 @@
-const SyncExchangesUseCase = require("../../application/use-cases/SyncExchangesUseCase");
+const SyncExchangesUseCase = require("../../application/use-cases/Exchanges/SyncExchangesUseCase");
 
 class ExchangesSyncScheduler {
   constructor({ exchangesRepository, businessCentralExchangesService }) {

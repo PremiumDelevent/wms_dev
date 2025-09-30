@@ -1,4 +1,4 @@
-const SyncProductsUseCase = require("../../application/use-cases/SyncProductsUseCase");
+const SyncProductsUseCase = require("../../application/use-cases/Products/SyncProductsUseCase");
 
 class ProductsSyncScheduler {
   constructor({ productRepository, businessCentralProductsService }) {

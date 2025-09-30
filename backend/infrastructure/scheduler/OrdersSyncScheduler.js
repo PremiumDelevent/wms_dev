@@ -1,4 +1,4 @@
-const SyncOrdersUseCase = require("../../application/use-cases/SyncOrdersUseCase");
+const SyncOrdersUseCase = require("../../application/use-cases/Orders/SyncOrdersUseCase");
 
 class OrdersSyncScheduler {
   constructor({ ordersRepository, businessCentralOrdersService }) {
