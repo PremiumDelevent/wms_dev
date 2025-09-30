@@ -119,7 +119,7 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: order.id }), // ⬅️ directo
+      body: JSON.stringify({ orderId: order.id }),
     });
 
     const data = await res.json().catch(() => null);
@@ -137,7 +137,55 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
   }
 };
 
-const registrarIncidencia = async () => {
+const setIncidentToIncidentsDb = async () => {
+  try {
+    const modifiedLines = order.lineas
+    .map((linea, i) => {
+      const diferencia = cantidades[i] - linea.cantidad; // cantidad actual - original
+      return { 
+        producto_id: linea.producto_id,
+        descripcion: linea.descripcion,
+        cantidad: diferencia // positivo si se sumó, negativo si se restó
+      };
+    })
+    .filter((linea) => linea.cantidad !== 0);
+
+
+    if (modifiedLines.length === 0) {
+      setMensaje("⚠️ No hay líneas modificadas, no se registra incidencia");
+      return;
+    }
+
+    const res = await fetch("http://localhost:4000/api/set-incidents-db", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        num: order.num,
+        sellto_customer_name: order.sellto_customer_name,
+        furniture_load_date_jmt: order.furniture_load_date_jmt,
+        jmt_status: order.jmt_status,
+        jmteventname: order.jmteventname,
+        lineas: modifiedLines,
+      }),
+    });
+
+    const data = await res.json().catch(() => null);
+    setIsError(!res.ok);
+    setMensaje(
+      data?.message ||
+        (res.ok
+          ? "✅ Incidencia insertada/actualizada correctamente"
+          : "❌ Error insertando incidencia")
+    );
+  } catch (err) {
+    console.error("❌ Error insertando incidencia:", err);
+    setIsError(true);
+    setMensaje("❌ Error insertando incidencia");
+  }
+};
+
+
+const setStatusIncidentToOrderDb = async () => {
   try {
     const res = await fetch("http://localhost:4000/api/incident-status", {
       method: "POST",
@@ -211,15 +259,23 @@ const registrarIncidencia = async () => {
 
         <button onClick={async () => { 
           actualizarStock(); 
-          actualizarStatus();
           if (typeAction === "return") {
             const hayIncidencias = order.lineas.some(
               (linea, i) => cantidades[i] !== linea.cantidad
             );
 
             if (hayIncidencias) {
-              await registrarIncidencia();
+              await setStatusIncidentToOrderDb();
+              await setIncidentToIncidentsDb();
             }
+
+            else{
+              actualizarStatus();
+            }
+          }
+
+          else{
+            actualizarStatus();
           }
         }} style={{
           marginTop: "20px",
