@@ -17,55 +17,82 @@ Esto permite mayor mantenibilidad, testeo y flexibilidad para integrar nuevas fu
 ```
 backend/
 ├── domain/         # Entidades y lógica de negocio
-|     └── entities/
-│         └── Order.js   
-|         └── Exchange.js
-|         └── Product.js    
-|     └── ports/
-│          └── IncidentStatusRespository.js 
-|          └── ExchangeRepository.js 
-|          └── OrdersRepository.js 
-|          └── ProductRepository.js 
-|          └── ReturnOrderRepository.js 
-|          └── ReturnStatusRepository.js
-|          └── ShipOrderRepository.js
-|          └── ShipStatusRepository.js
-|
+│   └── entities/
+│       └── Orders/
+│           └── Order.js
+│           └── IncidentStatus.js
+│       └── Exchanges/
+│           └── Exchange.js
+│       └── Products/
+│           └── Product.js
+│       └── Incidents/
+│           └── Incident.js
+│
+│   └── ports/
+│       └── Orders/
+│           └── OrdersRepository.js 
+│           └── IncidentStatusRepository.js 
+│           └── ReturnOrderRepository.js 
+│           └── ReturnStatusRepository.js
+│           └── ShipOrderRepository.js
+│           └── ShipStatusRepository.js
+│       └── Exchanges/
+│           └── ExchangeRepository.js 
+│       └── Products/
+│           └── ProductRepository.js 
+│       └── Incidents/
+│           └── IncidentsRepository.js 
+│
 ├── application/use-cases    # Casos de uso y servicios
-|     └── IncidentStatusUseCase.js
-|     └── ListExchangesUseCase.js
-|     └── ListOrdersUseCase.js
-|     └── ListProductsUseCase.js
-|     └── ReturnOrderUseCase.js
-|     └── ReturnStatusUseCase.js
-|     └── ShipOrderUseCase.js
-|     └── ShipStatusStatusUseCase.js
-|     └── SyncOrdersUseCase.js
-|     └── SyncExchangesUseCase.js
-|     └── SyncProductsUseCase.js
-|
+│   └── Orders/
+│       └── ListOrdersUseCase.js
+│       └── IncidentStatusUseCase.js
+│       └── ReturnOrderUseCase.js
+│       └── ReturnStatusUseCase.js
+│       └── ShipOrderUseCase.js
+│       └── ShipStatusUseCase.js
+│       └── SyncOrdersUseCase.js
+│   └── Exchanges/
+│       └── ListExchangesUseCase.js
+│       └── SyncExchangesUseCase.js
+│   └── Products/
+│       └── ListProductsUseCase.js
+│       └── SyncProductsUseCase.js
+│   └── Incidents/
+│       └── ListIncidentsUseCase.js
+│
 ├── infrastructure/ # Adaptadores, persistencia y APIs externas
-|      └── api/http/routes
-|          ...
-|      └── database/pg
-|            └── PgIncidentStatusRespository.js
-|            └── PgExchangesRepository.js
-|            └── PgOrdersRepository.js
-|            └── PgProductRepository.js
-|            └── PgReturnOrderRepository.js
-|            └── PgReturnStatusRepository.js
-|            └── PgReturnOrderRepository.js
-|            └── PgShipOrderRepository.js
-|            └── PgShipStatusRepository.js
-|      └── external
-|            └── BusinessCentralOrdersService.js
-|            └── BusinessCentralExchangesService.js
-|            └── BusinessCentralProductsService.js
-|      └── scheduler
-|            └── OrdersSyncScheduler.js
-|            └── ExchangesSyncScheduler.js
-|            └── ProductsSyncScheduler.js
-|
+│   └── api/http/routes
+│       └── Orders/
+│       └── Exchanges/
+│       └── Products/
+│       └── Incidents/
+│
+│   └── database/pg
+│       └── Orders/
+│           └── PgOrdersRepository.js
+│           └── PgIncidentStatusRepository.js
+│           └── PgReturnOrderRepository.js
+│           └── PgReturnStatusRepository.js
+│           └── PgShipOrderRepository.js
+│           └── PgShipStatusRepository.js
+│       └── Exchanges/
+│           └── PgExchangesRepository.js
+│       └── Products/
+│           └── PgProductRepository.js
+│       └── Incidents/
+│           └── PgIncidentsRepository.js
+│
+│   └── external
+│       └── BusinessCentralOrdersService.js
+│       └── BusinessCentralExchangesService.js
+│       └── BusinessCentralProductsService.js
+│
+│   └── scheduler
+│       └── OrdersSyncScheduler.js
+│       └── ExchangesSyncScheduler.js
+│       └── ProductsSyncScheduler.js
+│
 ├── server.js       
 └── ...
 ```
