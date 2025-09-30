@@ -20,6 +20,7 @@ const createShipOrderRouter = require("./infrastructure/api/http/routes/ship-ord
 const createShipStatusRouter = require("./infrastructure/api/http/routes/ship-status.routes");
 const createReturnStatusRouter = require("./infrastructure/api/http/routes/return-status.routes");
 const createIncidentStatusRouter = require("./infrastructure/api/http/routes/incident-status.routes");
+const createIncidentsRouter = require("./infrastructure/api/http/routes/incidents.routes");
 
 // =======================
 // PG y Servicios
@@ -93,6 +94,9 @@ app.use("/api", createReturnStatusRouter({ pool }));
 
 // Router hexagonal /api/incident-status
 app.use("/api", createIncidentStatusRouter({ pool }));
+
+// Router hexagonal /api/incidents-db
+app.use("/api", createIncidentsRouter({ pool }));
 
 // Dependencias
 const ordersRepository = new PgOrdersRepository({ pool });
