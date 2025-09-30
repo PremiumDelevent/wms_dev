@@ -174,6 +174,20 @@ CREATE TABLE orders (
 CREATE INDEX idx_orders_num ON orders(num);
 CREATE INDEX idx_orders_estado ON orders(jmt_status);
 CREATE INDEX idx_orders_lineas_gin ON orders USING gin (lineas jsonb_path_ops);
+
+CREATE TABLE incidents (
+  id SERIAL PRIMARY KEY,
+  num VARCHAR(50) UNIQUE NOT NULL,         -- Número de pedido en BC
+  sellto_customer_name TEXT,               -- Cliente
+  furniture_load_date_jmt TIMESTAMP NULL,  -- Fecha de carga
+  jmt_status VARCHAR(50),                  -- Estado
+  lineas JSONB NOT NULL DEFAULT '[]',      -- Array JSON con artículos
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now(),
+  jmtEventName VARCHAR(255)
+);
+
+
 ```
 
 ## 4️⃣ Sincronización de productos
