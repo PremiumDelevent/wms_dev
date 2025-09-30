@@ -1,4 +1,4 @@
-const IncidentStatusRepository = require("../../../../domain/ports/IncidentStatusRepository");
+const IncidentStatusRepository = require("../../../../domain/ports/Orders/IncidentStatusRepository");
 
 class PgIncidentStatusRepository extends IncidentStatusRepository {
   constructor({ pool }) {

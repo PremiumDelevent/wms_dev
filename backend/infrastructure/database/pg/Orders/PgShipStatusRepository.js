@@ -1,4 +1,4 @@
-const ShipStatusRepository = require("../../../../domain/ports/ShipStatusRepository");
+const ShipStatusRepository = require("../../../../domain/ports/Orders/ShipStatusRepository");
 
 class PgShipStatusRepository extends ShipStatusRepository {
   constructor({ pool }) {

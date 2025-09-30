@@ -1,4 +1,4 @@
-const ProductRepository = require("../../../../domain/ports/ProductRepository");
+const ProductRepository = require("../../../../domain/ports/Products/ProductRepository");
 const Product = require("../../../../domain/entities/Product");
 
 class PgProductRepository extends ProductRepository {

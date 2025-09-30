@@ -1,4 +1,4 @@
-const ExchangesRepository = require("../../../../domain/ports/ExchangesRepository");
+const ExchangesRepository = require("../../../../domain/ports/Exchanges/ExchangesRepository");
 const Exchange = require("../../../../domain/entities/Exchange");
 
 class PgExchangesRepository extends ExchangesRepository {
