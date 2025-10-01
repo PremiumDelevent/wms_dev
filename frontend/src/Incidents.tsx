@@ -30,53 +30,60 @@ interface IncidentPopupProps {
 interface LineaItemProps {
   linea: Linea;
   cantidad: number;
-  setCantidad: (n: number) => void;
+  recuperado: number;
+  setCantidadRecuperada: (n: number) => void;
 }
 
 // =======================
 // Componentes
 // =======================
-const LineaItem = ({ linea, cantidad, setCantidad }: LineaItemProps) => (
-  <li style={{ marginBottom: "6px" }}>
-    {linea.producto_id ?? "SIN_ID"} - {linea.descripcion} (x{cantidad})
-    <button
-      onClick={() => setCantidad(Math.max(cantidad - 1, 0))}
-      style={{
-        marginLeft: "10px",
-        padding: "2px 6px",
-        fontSize: "12px",
-        cursor: "pointer",
-        backgroundColor: "#dc3545",
-        color: "white",
-        border: "none",
-        borderRadius: "3px",
-      }}
-    >
-      -
-    </button>
-    <button
-      onClick={() => setCantidad(cantidad + 1)}
-      style={{
-        marginLeft: "4px",
-        padding: "2px 6px",
-        fontSize: "12px",
-        cursor: "pointer",
-        backgroundColor: "#28a745",
-        color: "white",
-        border: "none",
-        borderRadius: "3px",
-      }}
-    >
-      +
-    </button>
-  </li>
-);
+const LineaItem = ({ linea, cantidad, recuperado, setCantidadRecuperada }: LineaItemProps) => {
+  const maxRecuperable = Math.abs(cantidad);
+
+  return (
+    <li style={{ marginBottom: "6px" }}>
+      {linea.producto_id ?? "SIN_ID"} - {linea.descripcion} (x{cantidad}) 
+      <br />
+      Recuperado: (x{recuperado})
+      <button
+        onClick={() => setCantidadRecuperada(Math.max(recuperado - 1, 0))}
+        style={{
+          marginLeft: "10px",
+          padding: "2px 6px",
+          fontSize: "12px",
+          cursor: "pointer",
+          backgroundColor: "#dc3545",
+          color: "white",
+          border: "none",
+          borderRadius: "3px",
+        }}
+      >
+        -
+      </button>
+      <button
+        onClick={() => setCantidadRecuperada(Math.min(recuperado + 1, maxRecuperable))}
+        style={{
+          marginLeft: "4px",
+          padding: "2px 6px",
+          fontSize: "12px",
+          cursor: "pointer",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          borderRadius: "3px",
+        }}
+      >
+        +
+      </button>
+    </li>
+  );
+};
 
 function IncidentPopup({ incident, title, typeAction, onClose }: IncidentPopupProps) {
   // ✅ hooks siempre al inicio
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
-  const [cantidades, setCantidades] = useState<number[]>(incident?.lineas.map(l => l.cantidad) || []);
+  const [cantidadesRecuperadas, setCantidadesRecuperadas] = useState<number[]>(incident?.lineas.map(() => 0) || []);
 
   if (!incident) return null;
 
@@ -138,8 +145,9 @@ function IncidentPopup({ incident, title, typeAction, onClose }: IncidentPopupPr
               <LineaItem
                 key={i}
                 linea={linea}
-                cantidad={cantidades[i]}
-                setCantidad={(n) => setCantidades(prev => {
+                cantidad={linea.cantidad}
+                recuperado={cantidadesRecuperadas[i]}
+                setCantidadRecuperada={(n) => setCantidadesRecuperadas(prev => {
                   const copy = [...prev];
                   copy[i] = n;
                   return copy;
@@ -152,7 +160,6 @@ function IncidentPopup({ incident, title, typeAction, onClose }: IncidentPopupPr
         {mensaje && <p style={{ color: isError ? "red" : "green", fontWeight: "bold" }}>{mensaje}</p>}
 
         <button onClick={async () => { 
-
           if (typeAction === "close") {
             await deleteIncident();
           }
