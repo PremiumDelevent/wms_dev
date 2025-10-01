@@ -109,6 +109,33 @@ function IncidentPopup({ incident, title, typeAction, onClose }: IncidentPopupPr
     }
   };
 
+  const modifyIncident = async () => {
+    try {
+      const endpoint = "http://localhost:4000/api/return-order";
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: incident.id,
+          productos: incident.lineas.map((linea, i) => ({
+            producto_id: linea.producto_id,
+            descripcion: linea.descripcion,
+            cantidad: cantidadesRecuperadas[i],
+          })),
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+      setIsError(!res.ok);
+      setMensaje(data?.message || (res.ok ? "✅ Stock actualizado correctamente" : "❌ Error actualizando stock"));
+    } catch (err) {
+      console.error("❌ Error actualizando stock:", err);
+      setIsError(true);
+      setMensaje("❌ Error actualizando stock");
+    }
+  };
+
   return (
     <div style={{
       position: "fixed",
@@ -162,6 +189,10 @@ function IncidentPopup({ incident, title, typeAction, onClose }: IncidentPopupPr
         <button onClick={async () => { 
           if (typeAction === "close") {
             await deleteIncident();
+          }
+
+          else{
+            await modifyIncident();
           }
         }} style={{
           marginTop: "20px",
