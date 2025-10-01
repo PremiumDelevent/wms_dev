@@ -61,6 +61,23 @@ class PgIncidentsRepository extends IncidentsRepository {
             client.release();
           }
     }
+
+    async deleteIncident(num) {
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            await client.query(
+                `DELETE FROM incidents WHERE num = $1`,
+                [num]
+            );
+            await client.query("COMMIT");
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+    }
 }
 
 module.exports = PgIncidentsRepository;
