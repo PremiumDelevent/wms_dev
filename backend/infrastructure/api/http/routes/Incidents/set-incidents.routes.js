@@ -13,14 +13,11 @@ function createSetIncidentsRouter({ pool }) {
   router.post("/set-incidents-db", async (req, res) => {
     try {
       const incidentData = req.body;
-      console.log("📥 Datos recibidos incident:", incidentData);
   
       await setIncidentsUseCase.execute(incidentData);
   
-      res.json({ message: "Incident insertado/actualizado correctamente" });
     } catch (error) {
       console.error("❌ Error insertando incident en BD:", error);
-      res.status(500).json({ error: error.message });
     }
   });
 
