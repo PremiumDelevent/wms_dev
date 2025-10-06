@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // =======================
@@ -73,7 +73,6 @@ const LineaItem = ({ linea, cantidad, setCantidad }: LineaItemProps) => (
 );
 
 function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
-  // ✅ hooks siempre al inicio
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
   const [cantidades, setCantidades] = useState<number[]>(order?.lineas.map(l => l.cantidad) || []);
@@ -109,104 +108,102 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
     }
   };
 
- const actualizarStatus = async () => {
-  try {
-    const endpoint =
-      typeAction === "ship"
-        ? "http://localhost:4000/api/ship-status"
-        : "http://localhost:4000/api/return-status";
+  const actualizarStatus = async () => {
+    try {
+      const endpoint =
+        typeAction === "ship"
+          ? "http://localhost:4000/api/ship-status"
+          : "http://localhost:4000/api/return-status";
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: order.id }),
-    });
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      });
 
-    const data = await res.json().catch(() => null);
-    setIsError(!res.ok);
-    setMensaje(
-      data?.message ||
-        (res.ok
-          ? "✅ Estado actualizado correctamente"
-          : "❌ Error actualizando estado")
-    );
-  } catch (err) {
-    console.error("❌ Error actualizando estado:", err);
-    setIsError(true);
-    setMensaje("❌ Error actualizando estado");
-  }
-};
-
-const setIncidentToIncidentsDb = async () => {
-  try {
-    const modifiedLines = order.lineas
-    .map((linea, i) => {
-      const diferencia = cantidades[i] - linea.cantidad; // cantidad actual - original
-      return { 
-        producto_id: linea.producto_id,
-        descripcion: linea.descripcion,
-        cantidad: diferencia // positivo si se sumó, negativo si se restó
-      };
-    })
-    .filter((linea) => linea.cantidad !== 0);
-
-
-    if (modifiedLines.length === 0) {
-      setMensaje("⚠️ No hay líneas modificadas, no se registra incidencia");
-      return;
+      const data = await res.json().catch(() => null);
+      setIsError(!res.ok);
+      setMensaje(
+        data?.message ||
+          (res.ok
+            ? "✅ Estado actualizado correctamente"
+            : "❌ Error actualizando estado")
+      );
+    } catch (err) {
+      console.error("❌ Error actualizando estado:", err);
+      setIsError(true);
+      setMensaje("❌ Error actualizando estado");
     }
+  };
 
-    const res = await fetch("http://localhost:4000/api/set-incidents-db", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        num: order.num,
-        sellto_customer_name: order.sellto_customer_name,
-        furniture_load_date_jmt: order.furniture_load_date_jmt,
-        jmt_status: order.jmt_status,
-        jmteventname: order.jmteventname,
-        lineas: modifiedLines,
-      }),
-    });
+  const setIncidentToIncidentsDb = async () => {
+    try {
+      const modifiedLines = order.lineas
+        .map((linea, i) => {
+          const diferencia = cantidades[i] - linea.cantidad;
+          return { 
+            producto_id: linea.producto_id,
+            descripcion: linea.descripcion,
+            cantidad: diferencia
+          };
+        })
+        .filter((linea) => linea.cantidad !== 0);
 
-    const data = await res.json().catch(() => null);
-    setIsError(!res.ok);
-    setMensaje(
-      data?.message ||
-        (res.ok
-          ? "✅ Incidencia insertada/actualizada correctamente"
-          : "❌ Error insertando incidencia")
-    );
-  } catch (err) {
-    console.error("❌ Error insertando incidencia:", err);
-    setIsError(true);
-    setMensaje("❌ Error insertando incidencia");
-  }
-};
+      if (modifiedLines.length === 0) {
+        setMensaje("⚠️ No hay líneas modificadas, no se registra incidencia");
+        return;
+      }
 
+      const res = await fetch("http://localhost:4000/api/set-incidents-db", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          num: order.num,
+          sellto_customer_name: order.sellto_customer_name,
+          furniture_load_date_jmt: order.furniture_load_date_jmt,
+          jmt_status: order.jmt_status,
+          jmteventname: order.jmteventname,
+          lineas: modifiedLines,
+        }),
+      });
 
-const setStatusIncidentToOrderDb = async () => {
-  try {
-    const res = await fetch("http://localhost:4000/api/incident-status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: order.id }),
-    });
+      const data = await res.json().catch(() => null);
+      setIsError(!res.ok);
+      setMensaje(
+        data?.message ||
+          (res.ok
+            ? "✅ Incidencia insertada/actualizada correctamente"
+            : "❌ Error insertando incidencia")
+      );
+    } catch (err) {
+      console.error("❌ Error insertando incidencia:", err);
+      setIsError(true);
+      setMensaje("❌ Error insertando incidencia");
+    }
+  };
 
-    const data = await res.json().catch(() => null);
-    setIsError(!res.ok);
-    setMensaje(
-      data?.message ||
-        (res.ok
-          ? "⚠️ Incidencia registrada correctamente"
-          : "❌ Error registrando incidencia")
-    );
-  } catch (err) {
-    console.error("❌ Error registrando incidencia:", err);
-    setIsError(true);
-    setMensaje("❌ Error registrando incidencia");
-  }
-};
+  const setStatusIncidentToOrderDb = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/incident-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+
+      const data = await res.json().catch(() => null);
+      setIsError(!res.ok);
+      setMensaje(
+        data?.message ||
+          (res.ok
+            ? "⚠️ Incidencia registrada correctamente"
+            : "❌ Error registrando incidencia")
+      );
+    } catch (err) {
+      console.error("❌ Error registrando incidencia:", err);
+      setIsError(true);
+      setMensaje("❌ Error registrando incidencia");
+    }
+  };
 
   return (
     <div style={{
@@ -316,7 +313,19 @@ function Orders() {
   const [popupTitle, setPopupTitle] = useState<string>("");
   const [popupTypeAction, setPopupTypeAction] = useState<"ship" | "return">("ship");
 
+  const [filters, setFilters] = useState({
+    num: "",
+    cliente: "",
+    evento: "",
+    estado: "",
+  });
+
   const navigate = useNavigate();
+
+  const numRef = useRef<HTMLInputElement>(null);
+  const clienteRef = useRef<HTMLInputElement>(null);
+  const eventoRef = useRef<HTMLInputElement>(null);
+  const estadoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -345,6 +354,16 @@ function Orders() {
     setPopupTitle("");
   };
 
+  // Filtrado de orders según filters
+  const filteredOrders = orders.filter(order => {
+    return (
+      order.num?.toLowerCase().includes(filters.num.toLowerCase()) &&
+      order.sellto_customer_name?.toLowerCase().includes(filters.cliente.toLowerCase()) &&
+      order.jmteventname?.toLowerCase().includes(filters.evento.toLowerCase()) &&
+      order.jmt_status?.toLowerCase().includes(filters.estado.toLowerCase())
+    );
+  });
+
   return (
     <div className="container-1">
       <button onClick={() => navigate("/")} style={{
@@ -369,16 +388,64 @@ function Orders() {
         <table border={1} cellPadding={5} cellSpacing={0}>
           <thead>
             <tr>
-              <th>Número</th>
-              <th>Cliente</th>
-              <th>Evento</th>
+              <th>
+                Número
+                <br />
+                <input
+                  type="text"
+                  defaultValue={filters.num}
+                  ref={numRef}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setFilters(f => ({ ...f, num: numRef.current?.value || "" }));
+                  }}
+                  placeholder="Buscar..."
+                />
+              </th>
+              <th>
+                Cliente
+                <br />
+                <input
+                  type="text"
+                  defaultValue={filters.cliente}
+                  ref={clienteRef}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setFilters(f => ({ ...f, cliente: clienteRef.current?.value || "" }));
+                  }}
+                  placeholder="Buscar..."
+                />
+              </th>
+              <th>
+                Evento
+                <br />
+                <input
+                  type="text"
+                  defaultValue={filters.evento}
+                  ref={eventoRef}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setFilters(f => ({ ...f, evento: eventoRef.current?.value || "" }));
+                  }}
+                  placeholder="Buscar..."
+                />
+              </th>
               <th>Fecha carga</th>
-              <th>Estado</th>
+              <th>
+                Estado
+                <br />
+                <input
+                  type="text"
+                  defaultValue={filters.estado}
+                  ref={estadoRef}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setFilters(f => ({ ...f, estado: estadoRef.current?.value || "" }));
+                  }}
+                  placeholder="Buscar..."
+                />
+              </th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <tr key={order.id}>
                 <td>{order.num}</td>
                 <td>{order.sellto_customer_name}</td>
@@ -402,5 +469,4 @@ function Orders() {
   );
 }
 
-// ✅ Export final
 export default Orders;
