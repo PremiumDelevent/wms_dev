@@ -354,7 +354,7 @@ function Incidents() {
             if (e.key === "Enter") setFilters(f => ({ ...f, sellto_customer_name: sellto_customer_nameRef.current?.value || "" }));
           }}
           placeholder="Filtrar por cliente"
-          style={{ padding: "4px" }}
+          style={{ marginRight: "10px", padding: "4px" }}
         />
         <input
           type="text"
