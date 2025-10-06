@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // =======================
@@ -261,6 +261,16 @@ function Incidents() {
   const [popupTitle, setPopupTitle] = useState<string>("");
   const [popupTypeAction, setPopupTypeAction] = useState<"modify" | "close">("modify");
 
+  const [filters, setFilters] = useState({
+      num: "",
+      jmteventname: "",
+      sellto_customer_name: "",
+    });
+  
+    const numRef = useRef<HTMLInputElement>(null);
+    const jmteventnameRef = useRef<HTMLInputElement>(null);
+    const sellto_customer_nameRef = useRef<HTMLInputElement>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -290,6 +300,15 @@ function Incidents() {
     setPopupTitle("");
   };
 
+    // Filtrado según los filtros aplicados
+    const filteredIncidents = incidents.filter((incident) => {
+      return (
+        incident.num?.toLowerCase().includes(filters.num.toLowerCase()) &&
+        incident.jmteventname?.toLowerCase().includes(filters.jmteventname.toLowerCase()) &&
+        incident.sellto_customer_name?.toLowerCase().includes(filters.sellto_customer_name.toLowerCase())
+      );
+    });
+
   return (
     <div className="container-1">
       <button onClick={() => navigate("/")} style={{
@@ -305,6 +324,55 @@ function Incidents() {
       </button>
 
       <h1>Incidents - WMS PREMIUM DELEVENT</h1>
+
+      <div style={{ marginBottom: "15px" }}>
+        <input
+          type="text"
+          defaultValue={filters.num}
+          ref={numRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, num: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setFilters(f => ({ ...f, num: numRef.current?.value || "" }));
+          }}
+          placeholder="Filtrar por ID"
+          style={{ marginRight: "10px", padding: "4px" }}
+        />
+        <input
+          type="text"
+          defaultValue={filters.sellto_customer_name}
+          ref={sellto_customer_nameRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, sellto_customer_name: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setFilters(f => ({ ...f, sellto_customer_name: sellto_customer_nameRef.current?.value || "" }));
+          }}
+          placeholder="Filtrar por cliente"
+          style={{ padding: "4px" }}
+        />
+        <input
+          type="text"
+          defaultValue={filters.jmteventname}
+          ref={jmteventnameRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, jmteventname: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setFilters(f => ({ ...f, jmteventname: jmteventnameRef.current?.value || "" }));
+          }}
+          placeholder="Filtrar por evento"
+          style={{ marginRight: "10px", padding: "4px" }}
+        />
+        
+      </div>
 
       {loading ? (
         <p>Cargando incidents...</p>
@@ -323,7 +391,7 @@ function Incidents() {
             </tr>
           </thead>
           <tbody>
-            {incidents.map((incident) => (
+            {filteredIncidents.map((incident) => (
               <tr key={incident.id}>
                 <td>{incident.num}</td>
                 <td>{incident.sellto_customer_name}</td>
