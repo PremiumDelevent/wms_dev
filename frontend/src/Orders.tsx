@@ -354,7 +354,6 @@ function Orders() {
     setPopupTitle("");
   };
 
-  // Filtrado de orders según filters
   const filteredOrders = orders.filter(order => {
     return (
       order.num?.toLowerCase().includes(filters.num.toLowerCase()) &&
@@ -380,6 +379,78 @@ function Orders() {
 
       <h1>Orders - WMS PREMIUM DELEVENT</h1>
 
+      <div style={{ marginBottom: "15px" }}>
+        <input
+          type="text"
+          defaultValue={filters.num}
+          ref={numRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, num: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setFilters(f => ({ ...f, num: numRef.current?.value || "" }));
+            }
+          }}
+          placeholder="Buscar..."
+          style={{ marginRight: "10px", padding: "4px" }}
+        />
+
+        <input
+          type="text"
+          defaultValue={filters.cliente}
+          ref={clienteRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, cliente: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setFilters(f => ({ ...f, cliente: clienteRef.current?.value || "" }));
+            }
+          }}
+          placeholder="Buscar..."
+          style={{ marginRight: "10px", padding: "4px" }}
+        />
+          <input
+          type="text"
+          defaultValue={filters.evento}
+          ref={eventoRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, evento: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setFilters(f => ({ ...f, evento: eventoRef.current?.value || "" }));
+            }
+          }}
+          placeholder="Buscar..."
+          style={{ marginRight: "10px", padding: "4px" }}
+        />
+        <input
+          type="text"
+          defaultValue={filters.estado}
+          ref={estadoRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, estado: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setFilters(f => ({ ...f, estado: estadoRef.current?.value || "" }));
+            }
+          }}
+          placeholder="Buscar..."
+          style={{ padding: "4px" }}
+        />
+      </div>
+
       {loading ? (
         <p>Cargando orders...</p>
       ) : orders.length === 0 ? (
@@ -388,59 +459,11 @@ function Orders() {
         <table border={1} cellPadding={5} cellSpacing={0}>
           <thead>
             <tr>
-              <th>
-                Número
-                <br />
-                <input
-                  type="text"
-                  defaultValue={filters.num}
-                  ref={numRef}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") setFilters(f => ({ ...f, num: numRef.current?.value || "" }));
-                  }}
-                  placeholder="Buscar..."
-                />
-              </th>
-              <th>
-                Cliente
-                <br />
-                <input
-                  type="text"
-                  defaultValue={filters.cliente}
-                  ref={clienteRef}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") setFilters(f => ({ ...f, cliente: clienteRef.current?.value || "" }));
-                  }}
-                  placeholder="Buscar..."
-                />
-              </th>
-              <th>
-                Evento
-                <br />
-                <input
-                  type="text"
-                  defaultValue={filters.evento}
-                  ref={eventoRef}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") setFilters(f => ({ ...f, evento: eventoRef.current?.value || "" }));
-                  }}
-                  placeholder="Buscar..."
-                />
-              </th>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Evento</th>
               <th>Fecha carga</th>
-              <th>
-                Estado
-                <br />
-                <input
-                  type="text"
-                  defaultValue={filters.estado}
-                  ref={estadoRef}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") setFilters(f => ({ ...f, estado: estadoRef.current?.value || "" }));
-                  }}
-                  placeholder="Buscar..."
-                />
-              </th>
+              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
