@@ -78,6 +78,28 @@ class PgIncidentsRepository extends IncidentsRepository {
             client.release();
         }
     }
+
+    async modifyIncident(incident){
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            await client.query(
+                `UPDATE incidents SET 
+                    lineas = $2
+                WHERE num = $1`,
+                [
+                    incident.num,
+                    JSON.stringify(incident.lineas),
+                ]
+            );
+            await client.query("COMMIT");
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+    }
 }
 
 module.exports = PgIncidentsRepository;

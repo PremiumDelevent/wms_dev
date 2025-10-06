@@ -12,6 +12,10 @@ class IncidentsRepository {
     async deleteIncident(num) {
         throw new Error("Not implemented");
     }
+
+    async modifyIncident(incident) {
+        throw new Error("Not implemented");
+    }
   }
   
   module.exports = IncidentsRepository;
