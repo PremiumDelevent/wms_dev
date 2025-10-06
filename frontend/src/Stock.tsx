@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface Product {
   id: string;       // id de BC que usamos en la DB
@@ -10,6 +10,15 @@ interface Product {
 function Stock() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [filters, setFilters] = useState({
+    id: "",
+    name: "",
+    category: "",
+  });
+
+  const idRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -26,9 +35,66 @@ function Stock() {
       });
   }, []);
 
+  // Filtrado según los filtros aplicados
+  const filteredProducts = products.filter((product) => {
+    return (
+      product.id.toLowerCase().includes(filters.id.toLowerCase()) &&
+      product.name.toLowerCase().includes(filters.name.toLowerCase()) &&
+      product.category.toLowerCase().includes(filters.category.toLowerCase())
+    );
+  });
+
   return (
     <div className="container-1">
       <h1>Stock - WMS PREMIUM DELEVENT</h1>
+
+      <div style={{ marginBottom: "15px" }}>
+        <input
+          type="text"
+          defaultValue={filters.id}
+          ref={idRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, id: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setFilters(f => ({ ...f, id: idRef.current?.value || "" }));
+          }}
+          placeholder="Filtrar por ID"
+          style={{ marginRight: "10px", padding: "4px" }}
+        />
+        <input
+          type="text"
+          defaultValue={filters.name}
+          ref={nameRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, name: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setFilters(f => ({ ...f, name: nameRef.current?.value || "" }));
+          }}
+          placeholder="Filtrar por nombre"
+          style={{ marginRight: "10px", padding: "4px" }}
+        />
+        <input
+          type="text"
+          defaultValue={filters.category}
+          ref={categoryRef}
+          onChange={(e) => {
+            if (e.target.value === "") {
+              setFilters(f => ({ ...f, category: "" }));
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setFilters(f => ({ ...f, category: categoryRef.current?.value || "" }));
+          }}
+          placeholder="Filtrar por categoría"
+          style={{ padding: "4px" }}
+        />
+      </div>
 
       {loading ? (
         <div style={{ textAlign: "center", marginTop: "40px" }}>
@@ -64,7 +130,7 @@ function Stock() {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <tr key={product.id}>
                 <td>{product.id}</td>
                 <td>{product.name}</td>
