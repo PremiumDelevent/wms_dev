@@ -1,6 +1,6 @@
 
 import './App.css'
-
+import Chart from './Chart';
 function App() {
 
   return (
@@ -9,6 +9,7 @@ function App() {
       <p className="read-the-docs">
         Warehouse Management System - PREMIUM
       </p>
+      <Chart />
     </>
   )
 }
