@@ -18,15 +18,10 @@ Esto permite mayor mantenibilidad, testeo y flexibilidad para integrar nuevas fu
 backend/
 ├── domain/         # Entidades y lógica de negocio
 │   └── entities/
-│       └── Orders/
-│           └── Order.js
-│           └── IncidentStatus.js
-│       └── Exchanges/
-│           └── Exchange.js
-│       └── Products/
-│           └── Product.js
-│       └── Incidents/
-│           └── Incident.js
+│       └── Order.js
+│       └── Exchange.js
+│       └── Product.js
+│       └── Incident.js
 │
 │   └── ports/
 │       └── Orders/
@@ -59,14 +54,31 @@ backend/
 │       └── ListProductsUseCase.js
 │       └── SyncProductsUseCase.js
 │   └── Incidents/
+│       └── DeleteIncidentsUseCase.js
 │       └── ListIncidentsUseCase.js
+│       └── ModifyIncidentsUseCase.js
+│       └── SetIncidentsUseCase.js
 │
 ├── infrastructure/ # Adaptadores, persistencia y APIs externas
 │   └── api/http/routes
+│       └── Hello/
+│           └──hello.routes.js
 │       └── Orders/
+│           └── incident-status.routes.js 
+│           └── orders.routes.js
+│           └── return-order.routes.js
+│           └── return-status.routes.js
+│           └── ship-order.routes.js
+│           └── ship-status.routes.js
 │       └── Exchanges/
+│           └── exchanges.routes.js
 │       └── Products/
+│           └── products.routes.js
 │       └── Incidents/
+│           └── delete-incidents.routes.js
+│           └── incidents.routes.js
+│           └── modify-incidents.routes.js
+│           └── set-incidents.routes.js
 │
 │   └── database/pg
 │       └── Orders/
@@ -132,19 +144,27 @@ Endpoints disponibles:
 
 /api/products-db → productos desde PostgreSQL (stock real)
 
-/api/exchanges-db
+/api/exchanges-db → intercambios desde PostgreSQL
 
-/api/orders-db
+/api/orders-db → pedidos desde PostgreSQL
 
-/api/return-order
+/api/return-order → subir stock
 
-/api/ship-order
+/api/ship-order → bajar stock
 
-/api/ship-status
+/api/ship-status → status pedido a ENVIADO
 
-/api/return-status
+/api/return-status → status pedido a DEVUELTO
 
-/api/incident-status
+/api/incident-status → status pedido a INCIDENTE
+
+/api/incidents-db → incidentes desde PostgreSQL
+
+/api/set-incidents-db → guardar incidentes
+
+/api/delete-incidents-db → borrar incidentes
+
+/api/modify-incidents-db → modificar lineas incidentes
 
 ## 3️⃣ Base de datos local con Docker
 
