@@ -65,11 +65,6 @@ function Exchanges() {
           </thead>
           <tbody>
             {exchanges
-              .filter(
-                (line) =>
-                  line.location_code?.slice(2) !==
-                  line.shortcut_dimension_1_code
-              )
               .map((line) => (
                 <tr key={line.id}>
                   <td>{line.id}</td>
