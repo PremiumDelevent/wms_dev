@@ -10,7 +10,7 @@ class PgExchangesRepository extends ExchangesRepository {
     async listAll() {   
 
         const {rows} = await this.pool.query(
-            "SELECT id, documentno, description, location_code, shortcut_dimension_1_code FROM exchanges ORDER BY id ASC"
+            "SELECT id, documentno, description, location_code, shortcut_dimension_1_code FROM exchanges WHERE SUBSTRING(location_code, 3) <> shortcut_dimension_1_code ORDER BY id ASC",
         );
 
         return rows.map(
