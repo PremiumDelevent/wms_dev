@@ -27,14 +27,13 @@ backend/
 │       └── Orders/
 │           └── OrdersRepository.js 
 │           └── IncidentStatusRepository.js 
-│           └── ReturnOrderRepository.js 
-│           └── ReturnStatusRepository.js
-│           └── ShipOrderRepository.js
 │           └── ShipStatusRepository.js
 │       └── Exchanges/
 │           └── ExchangeRepository.js 
 │       └── Products/
 │           └── ProductRepository.js 
+│           └── IncreaseStockRepository.js
+│           └── DecreaseStockRepository.js
 │       └── Incidents/
 │           └── IncidentsRepository.js 
 │
@@ -42,9 +41,7 @@ backend/
 │   └── Orders/
 │       └── ListOrdersUseCase.js
 │       └── IncidentStatusUseCase.js
-│       └── ReturnOrderUseCase.js
 │       └── ReturnStatusUseCase.js
-│       └── ShipOrderUseCase.js
 │       └── ShipStatusUseCase.js
 │       └── SyncOrdersUseCase.js
 │   └── Exchanges/
@@ -52,6 +49,8 @@ backend/
 │       └── SyncExchangesUseCase.js
 │   └── Products/
 │       └── ListProductsUseCase.js
+│       └── IncreaseStockUseCase.js
+│       └── DecreaseStockUseCase.js
 │       └── SyncProductsUseCase.js
 │   └── Incidents/
 │       └── DeleteIncidentsUseCase.js
@@ -66,14 +65,14 @@ backend/
 │       └── Orders/
 │           └── incident-status.routes.js 
 │           └── orders.routes.js
-│           └── return-order.routes.js
 │           └── return-status.routes.js
-│           └── ship-order.routes.js
 │           └── ship-status.routes.js
 │       └── Exchanges/
 │           └── exchanges.routes.js
 │       └── Products/
 │           └── products.routes.js
+│           └── increase-stock.routes.js
+│           └── decrease-stock.routes.js
 │       └── Incidents/
 │           └── delete-incidents.routes.js
 │           └── incidents.routes.js
@@ -84,9 +83,7 @@ backend/
 │       └── Orders/
 │           └── PgOrdersRepository.js
 │           └── PgIncidentStatusRepository.js
-│           └── PgReturnOrderRepository.js
 │           └── PgReturnStatusRepository.js
-│           └── PgShipOrderRepository.js
 │           └── PgShipStatusRepository.js
 │       └── Exchanges/
 │           └── PgExchangesRepository.js
@@ -148,9 +145,9 @@ Endpoints disponibles:
 
 /api/orders-db → pedidos desde PostgreSQL
 
-/api/return-order → subir stock
+/api/increase-stock → subir stock
 
-/api/ship-order → bajar stock
+/api/decrease-stock → bajar stock
 
 /api/ship-status → status pedido a ENVIADO
 
