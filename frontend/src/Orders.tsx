@@ -83,7 +83,7 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
     try {
       const endpoint = typeAction === "ship"
         ? "http://localhost:4000/api/decrease-stock"
-        : "http://localhost:4000/api/return-order";
+        : "http://localhost:4000/api/increase-stock";
 
       const res = await fetch(endpoint, {
         method: "POST",

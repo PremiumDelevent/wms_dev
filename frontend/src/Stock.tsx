@@ -26,7 +26,7 @@ function ProductPopup({ product, title, typeAction, onClose }: ProductPopupProps
       const endpoint =
         typeAction === "ship"
           ? "http://localhost:4000/api/decrease-stock"     // disminuir stock
-          : "http://localhost:4000/api/return-order"; // aumentar stock
+          : "http://localhost:4000/api/increase-stock"; // aumentar stock
 
       const res = await fetch(endpoint, {
         method: "POST",

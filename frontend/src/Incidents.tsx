@@ -111,7 +111,7 @@ function IncidentPopup({ incident, title, typeAction, onClose }: IncidentPopupPr
 
   const modifyStock = async () => {
     try {
-      const endpoint = "http://localhost:4000/api/return-order";
+      const endpoint = "http://localhost:4000/api/increase-stock";
 
       const res = await fetch(endpoint, {
         method: "POST",

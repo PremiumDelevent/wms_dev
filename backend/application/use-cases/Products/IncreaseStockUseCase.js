@@ -1,6 +1,6 @@
-class ReturnOrderUseCase {
-    constructor({ returnOrderRepository }) {
-      this.returnOrderRepository = returnOrderRepository;
+class IncreaseStockUseCase {
+    constructor({ productRepository }) {
+      this.productRepository = productRepository;
     }
   
     async execute(payload) {
@@ -19,9 +19,9 @@ class ReturnOrderUseCase {
         return { updated: 0 };
       }
   
-      await this.returnOrderRepository.bulkIncreaseStock(items);
+      await this.productRepository.bulkIncreaseStock(items);
       return { updated: items.length };
     }
   }
   
-  module.exports = ReturnOrderUseCase;
+  module.exports = IncreaseStockUseCase;
