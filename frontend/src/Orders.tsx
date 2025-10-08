@@ -82,7 +82,7 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
   const actualizarStock = async () => {
     try {
       const endpoint = typeAction === "ship"
-        ? "http://localhost:4000/api/ship-order"
+        ? "http://localhost:4000/api/decrease-stock"
         : "http://localhost:4000/api/return-order";
 
       const res = await fetch(endpoint, {
