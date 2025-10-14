@@ -231,6 +231,18 @@ CREATE TABLE incidents (
   jmtEventName VARCHAR(255)
 );
 
+CREATE TABLE pallets (
+  id SERIAL PRIMARY KEY,
+  num VARCHAR(50) UNIQUE NOT NULL,         -- Número de pedido en BC
+  sellto_customer_name TEXT,               -- Cliente
+  furniture_load_date_jmt TIMESTAMP NULL,  -- Fecha de carga
+  jmt_status VARCHAR(50),                  -- Estado
+  lineas JSONB NOT NULL DEFAULT '[]',      -- Array JSON con artículos
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now(),
+  jmtEventName VARCHAR(255)
+);
+
 
 ```
 
