@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from "react";
+// src/pages/Orders.tsx
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // =======================
-// Interfaces
+// Tipos
 // =======================
 interface Linea {
   producto_id: string | null;
@@ -20,284 +21,157 @@ interface Order {
   lineas: Linea[];
 }
 
-interface OrderPopupProps {
-  order: Order | null;
-  title: string;
-  typeAction: "ship" | "return";
-  onClose: () => void;
+interface PalletItem {
+  producto_id: string | null;
+  descripcion: string;
+  cantidad: number;
+  orderNum: string;
 }
 
+// =======================
+// LineaItem (presentación + controles cantidad + checkbox)
+// =======================
 interface LineaItemProps {
   linea: Linea;
   cantidad: number;
   setCantidad: (n: number) => void;
+  checked: boolean;
+  toggleCheck: () => void;
 }
 
-// =======================
-// Componentes
-// =======================
-const LineaItem = ({ linea, cantidad, setCantidad }: LineaItemProps) => (
-  <li style={{ marginBottom: "6px" }}>
-    {linea.producto_id ?? "SIN_ID"} - {linea.descripcion} (x{cantidad})
-    <button
-      onClick={() => setCantidad(Math.max(cantidad - 1, 0))}
-      style={{
-        marginLeft: "10px",
-        padding: "2px 6px",
-        fontSize: "12px",
-        cursor: "pointer",
-        backgroundColor: "#dc3545",
-        color: "white",
-        border: "none",
-        borderRadius: "3px",
-      }}
-    >
-      -
-    </button>
-    <button
-      onClick={() => setCantidad(cantidad + 1)}
-      style={{
-        marginLeft: "4px",
-        padding: "2px 6px",
-        fontSize: "12px",
-        cursor: "pointer",
-        backgroundColor: "#28a745",
-        color: "white",
-        border: "none",
-        borderRadius: "3px",
-      }}
-    >
-      +
-    </button>
+const LineaItem = ({ linea, cantidad, setCantidad, checked, toggleCheck }: LineaItemProps) => (
+  <li style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+    <input type="checkbox" checked={checked} onChange={toggleCheck} />
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: "14px" }}>{linea.producto_id ?? "SIN_ID"} — {linea.descripcion}</div>
+      <div style={{ fontSize: "12px", color: "#666" }}>Teórico: {linea.cantidad}</div>
+    </div>
+
+    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+      <button
+        onClick={() => setCantidad(Math.max(cantidad - 1, 0))}
+        style={{ padding: "4px 8px", cursor: "pointer" }}
+        aria-label="disminuir"
+      >
+        -
+      </button>
+      <div style={{ minWidth: "28px", textAlign: "center" }}>{cantidad}</div>
+      <button
+        onClick={() => setCantidad(cantidad + 1)}
+        style={{ padding: "4px 8px", cursor: "pointer" }}
+        aria-label="aumentar"
+      >
+        +
+      </button>
+    </div>
   </li>
 );
 
-function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [isError, setIsError] = useState<boolean>(false);
+// =======================
+// OrderPopup
+// =======================
+interface OrderPopupProps {
+  order: Order | null;
+  onClose: () => void;
+  addToPallet: (lineas: Linea[], cantidades: number[], orderNum: string) => void;
+}
+
+function OrderPopup({ order, onClose, addToPallet }: OrderPopupProps) {
   const [cantidades, setCantidades] = useState<number[]>(order?.lineas.map(l => l.cantidad) || []);
+  const [selected, setSelected] = useState<boolean[]>(order?.lineas.map(() => false) || []);
+
+  useEffect(() => {
+    setCantidades(order?.lineas.map(l => l.cantidad) || []);
+    setSelected(order?.lineas.map(() => false) || []);
+  }, [order]);
 
   if (!order) return null;
 
-  const actualizarStock = async () => {
-    try {
-      const endpoint = typeAction === "ship"
-        ? "http://localhost:4000/api/decrease-stock"
-        : "http://localhost:4000/api/increase-stock";
+  const handleAddToPallet = () => {
+    const lineasSeleccionadas = order.lineas.filter((_, i) => selected[i]);
+    const cantidadesSeleccionadas = cantidades.filter((_, i) => selected[i]);
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: order.id,
-          productos: order.lineas.map((linea, i) => ({
-            producto_id: linea.producto_id,
-            descripcion: linea.descripcion,
-            cantidad: cantidades[i],
-          })),
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-      setIsError(!res.ok);
-      setMensaje(data?.message || (res.ok ? "✅ Stock actualizado correctamente" : "❌ Error actualizando stock"));
-    } catch (err) {
-      console.error("❌ Error actualizando stock:", err);
-      setIsError(true);
-      setMensaje("❌ Error actualizando stock");
+    if (lineasSeleccionadas.length === 0) {
+      alert("⚠️ Marca al menos una línea para añadir al palet");
+      return;
     }
-  };
 
-  const actualizarStatus = async () => {
-    try {
-      const endpoint =
-        typeAction === "ship"
-          ? "http://localhost:4000/api/ship-status"
-          : "http://localhost:4000/api/return-status";
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id }),
-      });
-
-      const data = await res.json().catch(() => null);
-      setIsError(!res.ok);
-      setMensaje(
-        data?.message ||
-          (res.ok
-            ? "✅ Estado actualizado correctamente"
-            : "❌ Error actualizando estado")
-      );
-    } catch (err) {
-      console.error("❌ Error actualizando estado:", err);
-      setIsError(true);
-      setMensaje("❌ Error actualizando estado");
-    }
-  };
-
-  const setIncidentToIncidentsDb = async () => {
-    try {
-      const modifiedLines = order.lineas
-        .map((linea, i) => {
-          const diferencia = cantidades[i] - linea.cantidad;
-          return { 
-            producto_id: linea.producto_id,
-            descripcion: linea.descripcion,
-            cantidad: diferencia
-          };
-        })
-        .filter((linea) => linea.cantidad !== 0);
-
-      if (modifiedLines.length === 0) {
-        setMensaje("⚠️ No hay líneas modificadas, no se registra incidencia");
-        return;
-      }
-
-      const res = await fetch("http://localhost:4000/api/set-incidents-db", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          num: order.num,
-          sellto_customer_name: order.sellto_customer_name,
-          furniture_load_date_jmt: order.furniture_load_date_jmt,
-          jmt_status: order.jmt_status,
-          jmteventname: order.jmteventname,
-          lineas: modifiedLines,
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-      setIsError(!res.ok);
-      setMensaje(
-        data?.message ||
-          (res.ok
-            ? "✅ Incidencia insertada/actualizada correctamente"
-            : "❌ Error insertando incidencia")
-      );
-    } catch (err) {
-      console.error("❌ Error insertando incidencia:", err);
-      setIsError(true);
-      setMensaje("❌ Error insertando incidencia");
-    }
-  };
-
-  const setStatusIncidentToOrderDb = async () => {
-    try {
-      const res = await fetch("http://localhost:4000/api/incident-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id }),
-      });
-
-      const data = await res.json().catch(() => null);
-      setIsError(!res.ok);
-      setMensaje(
-        data?.message ||
-          (res.ok
-            ? "⚠️ Incidencia registrada correctamente"
-            : "❌ Error registrando incidencia")
-      );
-    } catch (err) {
-      console.error("❌ Error registrando incidencia:", err);
-      setIsError(true);
-      setMensaje("❌ Error registrando incidencia");
-    }
+    addToPallet(lineasSeleccionadas, cantidadesSeleccionadas, order.num);
+    onClose();
   };
 
   return (
     <div style={{
-      position: "fixed",
-      top: 0, left: 0,
-      width: "100vw",
-      height: "100vh",
-      background: "rgba(0,0,0,0.5)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 1000,
-      color: "black"
+      position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+      background: "rgba(0,0,0,0.45)", display: "flex", justifyContent: "center", alignItems: "center",
+      zIndex: 2000, padding: "20px"
     }}>
       <div style={{
-        background: "white",
-        padding: "20px",
-        borderRadius: "10px",
-        width: "600px",
-        maxHeight: "80vh",
-        overflowY: "auto",
-        boxShadow: "0px 4px 10px rgba(0,0,0,0.3)"
+        width: "720px", maxHeight: "85vh", overflowY: "auto", background: "#fff",
+        borderRadius: "8px", padding: "18px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)", color: "black"
       }}>
-        <h2>{title}</h2>
-        <p><strong>Número:</strong> {order.num}</p>
-        <p><strong>Cliente:</strong> {order.sellto_customer_name}</p>
-        <p><strong>Evento:</strong> {order.jmteventname}</p>
-        <p><strong>Fecha carga:</strong> {order.furniture_load_date_jmt ? new Date(order.furniture_load_date_jmt).toLocaleString() : "-"}</p>
-        <p><strong>Estado:</strong> {order.jmt_status}</p>
+        <h2 style={{ marginTop: 0 }}>{`Pedido ${order.num} — ${order.sellto_customer_name}`}</h2>
+        <div style={{ marginBottom: "8px" }}>
+          <strong>Evento:</strong> {order.jmteventname} &nbsp;|&nbsp;
+          <strong>Fecha carga:</strong> {order.furniture_load_date_jmt ? new Date(order.furniture_load_date_jmt).toLocaleString() : "-"} &nbsp;|&nbsp;
+          <strong>Estado:</strong> {order.jmt_status}
+        </div>
 
-        <h3>Artículos</h3>
-        {order.lineas.length > 0 ? (
-          <ul>
+        <h3>Artículos (marca los que quieres añadir al palet)</h3>
+        {order.lineas.length === 0 ? (
+          <em>Sin artículos</em>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0 }}>
             {order.lineas.map((linea, i) => (
               <LineaItem
                 key={i}
                 linea={linea}
-                cantidad={cantidades[i]}
+                cantidad={cantidades[i] ?? linea.cantidad}
                 setCantidad={(n) => setCantidades(prev => {
                   const copy = [...prev];
                   copy[i] = n;
                   return copy;
                 })}
+                checked={selected[i] ?? false}
+                toggleCheck={() => setSelected(prev => {
+                  const copy = [...prev];
+                  copy[i] = !copy[i];
+                  return copy;
+                })}
               />
             ))}
           </ul>
-        ) : <em>Sin artículos</em>}
+        )}
 
-        {mensaje && <p style={{ color: isError ? "red" : "green", fontWeight: "bold" }}>{mensaje}</p>}
+        <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+          <button
+            onClick={handleAddToPallet}
+            style={{
+              padding: "8px 14px",
+              background: "#0ea5e9",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer"
+            }}
+          >
+            Añadir al palet
+          </button>
 
-        <button onClick={async () => { 
-          actualizarStock(); 
-          if (typeAction === "return") {
-            const hayIncidencias = order.lineas.some(
-              (linea, i) => cantidades[i] !== linea.cantidad
-            );
-
-            if (hayIncidencias) {
-              await setStatusIncidentToOrderDb();
-              await setIncidentToIncidentsDb();
-            }
-
-            else{
-              actualizarStatus();
-            }
-          }
-
-          else{
-            actualizarStatus();
-          }
-        }} style={{
-          marginTop: "20px",
-          padding: "8px 16px",
-          backgroundColor: "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginRight: "10px"
-        }}>
-          {typeAction === "ship" ? "Confirmar envío" : "Confirmar entrada"}
-        </button>
-
-        <button onClick={onClose} style={{
-          marginTop: "20px",
-          padding: "8px 16px",
-          backgroundColor: "#6c757d",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer"
-        }}>
-          Cerrar
-        </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: "8px 14px",
+              background: "#6b7280",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer"
+            }}
+          >
+            Cerrar
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -306,12 +180,11 @@ function OrderPopup({ order, title, typeAction, onClose }: OrderPopupProps) {
 // =======================
 // Componente principal Orders
 // =======================
-function Orders() {
+export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [popupOrder, setPopupOrder] = useState<Order | null>(null);
-  const [popupTitle, setPopupTitle] = useState<string>("");
-  const [popupTypeAction, setPopupTypeAction] = useState<"ship" | "return">("ship");
+  const [pallet, setPallet] = useState<PalletItem[]>([]);
 
   const [filters, setFilters] = useState({
     num: "",
@@ -321,7 +194,6 @@ function Orders() {
   });
 
   const navigate = useNavigate();
-
   const numRef = useRef<HTMLInputElement>(null);
   const clienteRef = useRef<HTMLInputElement>(null);
   const eventoRef = useRef<HTMLInputElement>(null);
@@ -343,15 +215,39 @@ function Orders() {
     fetchOrders();
   }, []);
 
-  const openPopup = (order: Order, title: string, typeAction: "ship" | "return") => {
-    setPopupOrder(order);
-    setPopupTitle(title);
-    setPopupTypeAction(typeAction);
+  const openPopup = (order: Order) => setPopupOrder(order);
+  const closePopup = () => setPopupOrder(null);
+
+  // Añadir líneas al palet global
+  const addToPallet = (lineas: Linea[], cantidades: number[], orderNum: string) => {
+    const nuevosItems = lineas.map((linea, i) => ({
+      producto_id: linea.producto_id,
+      descripcion: linea.descripcion,
+      cantidad: cantidades[i],
+      orderNum,
+    }));
+    setPallet(prev => [...prev, ...nuevosItems]);
   };
 
-  const closePopup = () => {
-    setPopupOrder(null);
-    setPopupTitle("");
+  // Crear palet global
+  const crearPalletGlobal = async () => {
+    if (pallet.length === 0) return alert("No hay productos en el palet");
+
+    try {
+      const res = await fetch("http://localhost:4000/api/set-pallets-db", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lineas: pallet }),
+      });
+
+      if (!res.ok) throw new Error("Error creando palet");
+
+      alert("✅ Palet creado correctamente");
+      setPallet([]); // vaciamos palet
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error creando palet");
+    }
   };
 
   const filteredOrders = orders.filter(order => {
@@ -364,132 +260,93 @@ function Orders() {
   });
 
   return (
-    <div className="container-1">
-      <button onClick={() => navigate("/")} style={{
-        padding: "8px 16px",
-        backgroundColor: "#6c757d",
-        color: "white",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-        fontSize: "14px"
-      }}>
+    <div style={{ padding: "18px" }}>
+      <button
+        onClick={() => navigate("/")}
+        style={{
+          padding: "8px 12px", background: "#374151", color: "#fff", border: "none",
+          borderRadius: "6px", cursor: "pointer", marginBottom: "12px"
+        }}
+      >
         ← Volver al inicio
       </button>
 
-      <h1>Orders - WMS PREMIUM DELEVENT</h1>
+      <h1 style={{ marginTop: 0 }}>Orders - WMS PREMIUM DELEVENT</h1>
 
-      <div style={{ marginBottom: "15px" }}>
-        <input
-          type="text"
-          defaultValue={filters.num}
-          ref={numRef}
-          onChange={(e) => {
-            if (e.target.value === "") {
-              setFilters(f => ({ ...f, num: "" }));
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setFilters(f => ({ ...f, num: numRef.current?.value || "" }));
-            }
-          }}
-          placeholder="Buscar..."
-          style={{ marginRight: "10px", padding: "4px" }}
-        />
 
-        <input
-          type="text"
-          defaultValue={filters.cliente}
-          ref={clienteRef}
-          onChange={(e) => {
-            if (e.target.value === "") {
-              setFilters(f => ({ ...f, cliente: "" }));
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setFilters(f => ({ ...f, cliente: clienteRef.current?.value || "" }));
-            }
-          }}
-          placeholder="Buscar..."
-          style={{ marginRight: "10px", padding: "4px" }}
-        />
-          <input
-          type="text"
-          defaultValue={filters.evento}
-          ref={eventoRef}
-          onChange={(e) => {
-            if (e.target.value === "") {
-              setFilters(f => ({ ...f, evento: "" }));
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setFilters(f => ({ ...f, evento: eventoRef.current?.value || "" }));
-            }
-          }}
-          placeholder="Buscar..."
-          style={{ marginRight: "10px", padding: "4px" }}
-        />
-        <input
-          type="text"
-          defaultValue={filters.estado}
-          ref={estadoRef}
-          onChange={(e) => {
-            if (e.target.value === "") {
-              setFilters(f => ({ ...f, estado: "" }));
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setFilters(f => ({ ...f, estado: estadoRef.current?.value || "" }));
-            }
-          }}
-          placeholder="Buscar..."
-          style={{ padding: "4px" }}
-        />
+      {/* Palet global */}
+      <div style={{ marginTop: "20px" }}>
+        <h3>Palet actual:</h3>
+        {pallet.length === 0 ? <p>No hay productos añadidos.</p> : (
+          <ul>
+            {pallet.map((p, i) => (
+              <li key={i}>{p.orderNum} — {p.descripcion} x {p.cantidad}</li>
+            ))}
+          </ul>
+        )}
+        <button
+          onClick={crearPalletGlobal}
+          style={{ marginTop: "10px", padding: "8px 14px", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}
+        >
+          Crear palet global
+        </button>
       </div>
 
+      {popupOrder && <OrderPopup order={popupOrder} onClose={closePopup} addToPallet={addToPallet} />}
+
+      
+      {/* Filtros */}
+      <div style={{ marginTop: "20px", marginBottom: "15px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <input ref={numRef} placeholder="Número" value={filters.num} onChange={(e) => setFilters(f => ({ ...f, num: e.target.value }))} style={{ padding: "4px" }} />
+        <input ref={clienteRef} placeholder="Cliente" value={filters.cliente} onChange={(e) => setFilters(f => ({ ...f, cliente: e.target.value }))} style={{ padding: "4px" }} />
+        <input ref={eventoRef} placeholder="Evento" value={filters.evento} onChange={(e) => setFilters(f => ({ ...f, evento: e.target.value }))} style={{ padding: "4px" }} />
+        <input ref={estadoRef} placeholder="Estado" value={filters.estado} onChange={(e) => setFilters(f => ({ ...f, estado: e.target.value }))} style={{ padding: "4px" }} />
+      </div>
+
+
+      {/* Tabla de orders */}
       {loading ? (
         <p>Cargando orders...</p>
-      ) : orders.length === 0 ? (
+      ) : filteredOrders.length === 0 ? (
         <p>No hay orders disponibles.</p>
       ) : (
-        <table border={1} cellPadding={5} cellSpacing={0}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr>
-              <th>Número</th>
-              <th>Cliente</th>
-              <th>Evento</th>
-              <th>Fecha carga</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+            <tr style={{ textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>
+              <th style={{ padding: "8px" }}>Número</th>
+              <th style={{ padding: "8px" }}>Cliente</th>
+              <th style={{ padding: "8px" }}>Evento</th>
+              <th style={{ padding: "8px" }}>Fecha carga</th>
+              <th style={{ padding: "8px" }}>Estado</th>
+              <th style={{ padding: "8px" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredOrders.map((order) => (
-              <tr key={order.id}>
-                <td>{order.num}</td>
-                <td>{order.sellto_customer_name}</td>
-                <td>{order.jmteventname}</td>
-                <td>{order.furniture_load_date_jmt ? new Date(order.furniture_load_date_jmt).toLocaleString() : "-"}</td>
-                <td>{order.jmt_status}</td>
-                <td>
-                  <button onClick={() => openPopup(order, "📦 Enviar order", "ship")}>Enviar order</button>
-                  <button onClick={() => openPopup(order, "↩️ Entrada order", "return")}>Entrada order</button>
+              <tr key={order.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                <td style={{ padding: "8px" }}>{order.num}</td>
+                <td style={{ padding: "8px" }}>{order.sellto_customer_name}</td>
+                <td style={{ padding: "8px" }}>{order.jmteventname}</td>
+                <td style={{ padding: "8px" }}>
+                  {order.furniture_load_date_jmt ? new Date(order.furniture_load_date_jmt).toLocaleString() : "-"}
+                </td>
+                <td style={{ padding: "8px" }}>{order.jmt_status}</td>
+                <td style={{ padding: "8px", display: "flex", gap: "8px" }}>
+                  <button
+                    onClick={() => openPopup(order)}
+                    style={{
+                      padding: "6px 10px", background: "#06b6d4", color: "#fff",
+                      border: "none", borderRadius: "6px", cursor: "pointer"
+                    }}
+                  >
+                    Ver Detalle
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
-
-      {popupOrder && (
-        <OrderPopup order={popupOrder} title={popupTitle} typeAction={popupTypeAction} onClose={closePopup} />
-      )}
     </div>
   );
 }
-
-export default Orders;

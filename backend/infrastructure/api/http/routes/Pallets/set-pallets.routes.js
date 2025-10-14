@@ -15,9 +15,19 @@ function createSetPalletsRouter({ pool }) {
       const palletData = req.body;
   
       await setPalletsUseCase.execute(palletData);
+      
+      return res.status(200).json({ 
+        success: true,
+        message: 'Pallet creado correctamente' 
+      });
   
     } catch (error) {
       console.error("❌ Error insertando pallet en BD:", error);
+      
+      return res.status(500).json({ 
+        success: false,
+        message: error.message || 'Error al crear el pallet' 
+      });
     }
   });
 
