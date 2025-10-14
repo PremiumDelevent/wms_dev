@@ -24,6 +24,7 @@ const createIncidentsRouter = require("./infrastructure/api/http/routes/Incident
 const createSetIncidentsRouter = require("./infrastructure/api/http/routes/Incidents/set-incidents.routes");
 const createDeleteIncidentsRouter = require("./infrastructure/api/http/routes/Incidents/delete-incidents.routes");
 const createModifyIncidentsRouter = require("./infrastructure/api/http/routes/Incidents/modify-incidents.routes");
+const createSetPalletsRouter = require("./infrastructure/api/http/routes/Pallets/set-pallets.routes");
 
 // =======================
 // PG y Servicios
@@ -109,6 +110,9 @@ app.use("/api", createDeleteIncidentsRouter({ pool }));
 
 // Router hexagonal /api/modify-incidents-db
 app.use("/api", createModifyIncidentsRouter({ pool }));
+
+// Router hexagonal /api/set-pallets-db
+app.use("/api", createSetPalletsRouter({ pool }));
 
 // Dependencias
 const ordersRepository = new PgOrdersRepository({ pool });
