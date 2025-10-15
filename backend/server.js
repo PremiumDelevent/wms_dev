@@ -28,6 +28,7 @@ const createModifyIncidentsRouter = require("./infrastructure/api/http/routes/In
 const createListPalletsRouter = require("./infrastructure/api/http/routes/Pallets/pallets.routes");
 const createListOnePalletRouter = require("./infrastructure/api/http/routes/Pallets/list-one-pallet.routes");
 const createSetPalletsRouter = require("./infrastructure/api/http/routes/Pallets/set-pallets.routes");
+const createPalletPdfRouter = require("./infrastructure/api/http/routes/Pallets/pallet-to-pdf.routes");
 
 // =======================
 // PG y Servicios
@@ -125,6 +126,9 @@ app.use("/api", createListOnePalletRouter({ pool }));
 
 // Router hexagonal /api/set-pallets-db
 app.use("/api", createSetPalletsRouter({ pool }));
+
+// Router hexagonal /api/pallets-db/:id/pdf
+app.use("/api", createPalletPdfRouter({ pool }));
 
 // Dependencias
 const ordersRepository = new PgOrdersRepository({ pool });
