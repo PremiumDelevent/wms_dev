@@ -7,6 +7,27 @@ class PgPalletsRepository extends PalletsRepository {
         this.pool = pool;
     }
 
+    async listPallets(){
+      const client = await this.pool.connect();
+
+      try{
+        await client.query("BEGIN");
+        
+        const result = await client.query(
+          `SELECT * FROM pallets`
+        )
+
+        await client.query("COMMIT");
+
+        return result.rows;
+      }catch(e){
+        await client.query("ROLLBACK");
+        throw e;
+      }finally{
+        client.release();
+      }
+    }
+
     async setPallet(pallet) {
         const client = await this.pool.connect();
 
