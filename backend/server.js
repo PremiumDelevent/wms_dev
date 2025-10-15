@@ -26,6 +26,7 @@ const createSetIncidentsRouter = require("./infrastructure/api/http/routes/Incid
 const createDeleteIncidentsRouter = require("./infrastructure/api/http/routes/Incidents/delete-incidents.routes");
 const createModifyIncidentsRouter = require("./infrastructure/api/http/routes/Incidents/modify-incidents.routes");
 const createListPalletsRouter = require("./infrastructure/api/http/routes/Pallets/pallets.routes");
+const createListOnePalletRouter = require("./infrastructure/api/http/routes/Pallets/list-one-pallet.routes");
 const createSetPalletsRouter = require("./infrastructure/api/http/routes/Pallets/set-pallets.routes");
 
 // =======================
@@ -118,6 +119,9 @@ app.use("/api", createModifyIncidentsRouter({ pool }));
 
 // Router hexagonal /api/list-pallets-db
 app.use("/api", createListPalletsRouter({ pool }));
+
+// Router hexagonal /api/list-one-pallet-db
+app.use("/api", createListOnePalletRouter({ pool }));
 
 // Router hexagonal /api/set-pallets-db
 app.use("/api", createSetPalletsRouter({ pool }));

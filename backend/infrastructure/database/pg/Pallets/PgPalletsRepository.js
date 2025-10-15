@@ -28,6 +28,28 @@ class PgPalletsRepository extends PalletsRepository {
       }
     }
 
+    async listOnePallet(id){
+      const client = await this.pool.connect();
+
+      try{
+        await client.query("BEGIN");
+        
+        const result = await client.query(
+          `SELECT * FROM pallets WHERE id = $1`,
+          [id]
+        )
+
+        await client.query("COMMIT");
+
+        return result.rows[0];
+      }catch(e){
+        await client.query("ROLLBACK");
+        throw e;
+      }finally{
+        client.release();
+      }
+    }
+
     async setPallet(pallet) {
         const client = await this.pool.connect();
 
