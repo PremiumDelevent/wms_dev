@@ -77,6 +77,8 @@ interface OrderPopupProps {
 }
 
 function OrderPopup({ order, onClose, addToPallet }: OrderPopupProps) {
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const [isError, setIsError] = useState<boolean>(false);
   const [cantidades, setCantidades] = useState<number[]>(order?.lineas.map(l => l.cantidad) || []);
   const [selected, setSelected] = useState<boolean[]>(order?.lineas.map(() => false) || []);
 
@@ -92,7 +94,8 @@ function OrderPopup({ order, onClose, addToPallet }: OrderPopupProps) {
     const cantidadesSeleccionadas = cantidades.filter((_, i) => selected[i]);
 
     if (lineasSeleccionadas.length === 0) {
-      alert("⚠️ Marca al menos una línea para añadir al palet");
+      setIsError(true);
+      setMensaje("⚠️ Marca al menos una línea para añadir al palet");
       return;
     }
 
@@ -143,6 +146,8 @@ function OrderPopup({ order, onClose, addToPallet }: OrderPopupProps) {
           </ul>
         )}
 
+        {mensaje && <p style={{ color: isError ? "red" : "green", fontWeight: "bold" }}>{mensaje}</p>}
+
         <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
           <button
             onClick={handleAddToPallet}
@@ -186,6 +191,13 @@ export default function Orders() {
   const [popupOrder, setPopupOrder] = useState<Order | null>(null);
   const [pallet, setPallet] = useState<PalletItem[]>([]);
 
+  // =======================
+  // Mensajes globales
+  // =======================
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const [isError, setIsError] = useState<boolean>(false);
+
+  // filtros
   const [filters, setFilters] = useState({
     num: "",
     cliente: "",
@@ -231,7 +243,11 @@ export default function Orders() {
 
   // Crear palet global
   const crearPalletGlobal = async () => {
-    if (pallet.length === 0) return alert("No hay productos en el palet");
+    if (pallet.length === 0) {
+      setIsError(true);
+      setMensaje("⚠️ No hay productos en el palet");
+      return;
+    }
 
     try {
       const res = await fetch("http://localhost:4000/api/set-pallets-db", {
@@ -242,11 +258,13 @@ export default function Orders() {
 
       if (!res.ok) throw new Error("Error creando palet");
 
-      alert("✅ Palet creado correctamente");
+      setIsError(false);
+      setMensaje("✅ Palet creado correctamente");
       setPallet([]); // vaciamos palet
     } catch (err) {
       console.error(err);
-      alert("❌ Error creando palet");
+      setIsError(true);
+      setMensaje("❌ Error creando palet");
     }
   };
 
@@ -273,6 +291,12 @@ export default function Orders() {
 
       <h1 style={{ marginTop: 0 }}>Orders - WMS PREMIUM DELEVENT</h1>
 
+      {/* Mensaje global */}
+      {mensaje && (
+        <p style={{ color: isError ? "red" : "green", fontWeight: "bold" }}>
+          {mensaje}
+        </p>
+      )}
 
       {/* Palet global */}
       <div style={{ marginTop: "20px" }}>
@@ -292,9 +316,9 @@ export default function Orders() {
         </button>
       </div>
 
+      {/* Popup */}
       {popupOrder && <OrderPopup order={popupOrder} onClose={closePopup} addToPallet={addToPallet} />}
 
-      
       {/* Filtros */}
       <div style={{ marginTop: "20px", marginBottom: "15px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
         <input ref={numRef} placeholder="Número" value={filters.num} onChange={(e) => setFilters(f => ({ ...f, num: e.target.value }))} style={{ padding: "4px" }} />
@@ -302,7 +326,6 @@ export default function Orders() {
         <input ref={eventoRef} placeholder="Evento" value={filters.evento} onChange={(e) => setFilters(f => ({ ...f, evento: e.target.value }))} style={{ padding: "4px" }} />
         <input ref={estadoRef} placeholder="Estado" value={filters.estado} onChange={(e) => setFilters(f => ({ ...f, estado: e.target.value }))} style={{ padding: "4px" }} />
       </div>
-
 
       {/* Tabla de orders */}
       {loading ? (
@@ -312,7 +335,7 @@ export default function Orders() {
       ) : (
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>
+            <tr style={{ textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>
               <th style={{ padding: "8px" }}>Número</th>
               <th style={{ padding: "8px" }}>Cliente</th>
               <th style={{ padding: "8px" }}>Evento</th>

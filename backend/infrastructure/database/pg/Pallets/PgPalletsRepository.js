@@ -13,11 +13,6 @@ class PgPalletsRepository extends PalletsRepository {
         try {
             await client.query("BEGIN");
             
-            // ❌ PROBLEMA 1: Falta el RETURNING * si quieres devolver el registro
-            // ❌ PROBLEMA 2: Si quitaste "num" como UNIQUE constraint, no hay ON CONFLICT
-            // ❌ PROBLEMA 3: Falta ON CONFLICT antes del DO UPDATE
-            
-            // ✅ SOLUCIÓN: Solo INSERT sin ON CONFLICT (ya que no hay constraint único)
             const result = await client.query(
               `INSERT INTO pallets (
                 sellto_customer_name, 
