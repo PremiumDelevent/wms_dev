@@ -1,5 +1,6 @@
 const express = require("express");
 const PDFDocument = require("pdfkit");
+const QRCode = require("qrcode");
 const PgPalletsRepository = require("../../../../database/pg/Pallets/PgPalletsRepository");
 const ListOnePalletUseCase = require("../../../../../application/use-cases/Pallets/ListOnePalletUseCase");
 
@@ -17,24 +18,42 @@ function createPalletPdfRouter({ pool }) {
     try {
       // 1️⃣ Obtener pallet de la base de datos
       const pallet = await listOnePalletUseCase.execute(id);
-
       if (!pallet) {
         return res.status(404).json({ error: "Pallet no encontrado" });
       }
 
-      // 2️⃣ Crear documento PDF
+      // 2️⃣ Generar código QR con la URL correcta
+      const url = `http://localhost:5173/pallet/${id}`;
+      const qrDataURL = await QRCode.toDataURL(url);
+
+      // 3️⃣ Crear documento PDF
       const doc = new PDFDocument({ margin: 50 });
 
       // Configurar cabeceras para forzar descarga
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="pallet_${id}.pdf"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="pallet_${id}.pdf"`
+      );
 
-      // 3️⃣ Enlazar PDF directamente a la respuesta
+      // 4️⃣ Enlazar PDF directamente a la respuesta
       doc.pipe(res);
 
-      // 4️⃣ Contenido del PDF
-      doc.fontSize(20).text("📦 Pallet Details", { align: "center" });
-      doc.moveDown();
+      // 🧭 Insertar QR en la esquina superior derecha
+      const qrSize = 100;
+      const pageWidth = doc.page.width;
+      const margin = 50;
+      const qrX = pageWidth - qrSize - margin;
+      const qrY = margin;
+
+      doc.image(qrDataURL, qrX, qrY, { fit: [qrSize, qrSize] });
+
+      // 5️⃣ Título y cabecera
+      doc.fontSize(20).text("📦 Pallet Details", margin, margin, {
+        align: "left",
+      });
+
+      doc.moveDown(3);
 
       doc.fontSize(12).text(`ID: ${pallet.id}`);
       doc.text(`Cliente: ${pallet.sellto_customer_name}`);
@@ -46,7 +65,7 @@ function createPalletPdfRouter({ pool }) {
       doc.fontSize(14).text("Líneas del pallet:", { underline: true });
       doc.moveDown();
 
-      // 5️⃣ Mostrar líneas si existen
+      // 6️⃣ Mostrar líneas
       if (pallet.lineas && Array.isArray(pallet.lineas)) {
         pallet.lineas.forEach((linea, index) => {
           doc.fontSize(12).text(
@@ -63,7 +82,7 @@ function createPalletPdfRouter({ pool }) {
         align: "right",
       });
 
-      // 6️⃣ Finalizar PDF
+      // 7️⃣ Finalizar PDF
       doc.end();
     } catch (error) {
       console.error("❌ Error generando PDF del pallet:", error);
