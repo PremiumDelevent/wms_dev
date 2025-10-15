@@ -20,7 +20,7 @@ interface Order {
   lineas: Linea[];
 }
 
-interface PalletItem {
+interface PalletLinea {
   producto_id: string | null;
   descripcion: string;
   cantidad: number;
@@ -188,7 +188,7 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [popupOrder, setPopupOrder] = useState<Order | null>(null);
-  const [pallet, setPallet] = useState<PalletItem[]>([]);
+  const [palletLineas, setPalletLineas] = useState<PalletLinea[]>([]);
 
   // =======================
   // Mensajes globales
@@ -237,29 +237,42 @@ export default function Orders() {
       cantidad: cantidades[i],
       orderNum,
     }));
-    setPallet(prev => [...prev, ...nuevosItems]);
+    setPalletLineas(prev => [...prev, ...nuevosItems]);
   };
 
   // Crear palet global
   const crearPalletGlobal = async () => {
-    if (pallet.length === 0) {
+    if (palletLineas.length === 0) {
       setIsError(true);
       setMensaje("⚠️ No hay productos en el palet");
       return;
     }
 
+    // Recuperamos el evento de uno de los pedidos (ej. el primero)
+    const primerPedido = orders.find(o => o.num === palletLineas[0].orderNum);
+    const evento = primerPedido?.jmteventname ?? "SIN_EVENTO";
+    const cliente = primerPedido?.sellto_customer_name ?? "SIN_CLIENTE";
+    const fechaCarga = primerPedido?.furniture_load_date_jmt ?? null;
+
+    const palletAPreparar = {
+      sellto_customer_name: cliente,
+      furniture_load_date_jmt: fechaCarga,
+      jmteventname: evento,
+      lineas: palletLineas,
+    };
+
     try {
       const res = await fetch("http://localhost:4000/api/set-pallets-db", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lineas: pallet }),
+        body: JSON.stringify(palletAPreparar),
       });
 
       if (!res.ok) throw new Error("Error creando palet");
 
       setIsError(false);
-      setMensaje("✅ Palet creado correctamente");
-      setPallet([]); // vaciamos palet
+      setMensaje(`✅ Palet creado correctamente para el evento: ${evento}`);
+      setPalletLineas([]); // vaciamos palet
     } catch (err) {
       console.error(err);
       setIsError(true);
@@ -300,9 +313,9 @@ export default function Orders() {
       {/* Palet global */}
       <div style={{ marginTop: "20px" }}>
         <h3>Palet actual:</h3>
-        {pallet.length === 0 ? <p>No hay productos añadidos.</p> : (
+        {palletLineas.length === 0 ? <p>No hay productos añadidos.</p> : (
           <ul>
-            {pallet.map((p, i) => (
+            {palletLineas.map((p, i) => (
               <li key={i}>{p.orderNum} — {p.descripcion} x {p.cantidad}</li>
             ))}
           </ul>
