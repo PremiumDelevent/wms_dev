@@ -6,6 +6,7 @@ import Header from './Header.tsx'
 import Stock from './Stock.tsx'
 import Exchanges from './Exchanges.tsx'
 import Orders from './Orders.tsx'
+import Pallets from './Pallets.tsx'
 import Incidents from './Incidents.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
   {
     path: '/orders',
     element: <Orders />,
+  },
+    {
+    path: '/pallets',
+    element: <Pallets />,
   },
   {
     path: '/incidents',

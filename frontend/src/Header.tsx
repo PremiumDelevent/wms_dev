@@ -13,6 +13,7 @@ function Header() {
                 <a href="/exchanges" style={{ margin: '0 15px', textDecoration: 'none', color: 'white', fontWeight: 'bold' }}>Exchanges</a>
                 <a href="/stock" style={{ margin: '0 15px', textDecoration: 'none', color: 'white', fontWeight: 'bold' }}>Stock</a>
                 <a href="/orders" style={{ margin: '0 15px', textDecoration: 'none', color: 'white', fontWeight: 'bold' }}>Orders</a>
+                <a href="/pallets" style={{ margin: '0 15px', textDecoration: 'none', color: 'white', fontWeight: 'bold' }}>Pallets</a>
                 <a href="/incidents" style={{ margin: '0 15px', textDecoration: 'none', color: 'white', fontWeight: 'bold' }}>Incidents</a>
             </nav>
     </header>
