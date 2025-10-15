@@ -46,6 +46,17 @@ class PgOrdersRepository extends OrdersRepository {
             ]
         );
     }
+
+    async updateOrder(order) {
+        await this.pool.query(
+            `UPDATE orders SET lineas = $1, updated_at = now()
+            WHERE num = $2`,
+            [
+                JSON.stringify(order.lineas),
+                order.num
+            ]
+        );
+    }
 }
 
 module.exports = PgOrdersRepository;
