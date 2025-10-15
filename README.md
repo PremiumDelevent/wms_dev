@@ -233,7 +233,6 @@ CREATE TABLE incidents (
 
 CREATE TABLE pallets (
   id SERIAL PRIMARY KEY,
-  num VARCHAR(50) UNIQUE NOT NULL,         -- Número de pedido en BC
   sellto_customer_name TEXT,               -- Cliente
   furniture_load_date_jmt TIMESTAMP NULL,  -- Fecha de carga
   jmt_status VARCHAR(50),                  -- Estado
