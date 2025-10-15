@@ -40,6 +40,30 @@ export default function PalletDetail() {
     fetchPallet();
   }, [id]);
 
+  const handleDownloadPDF = async () => {
+    try {
+      const res = await fetch(`http://localhost:4000/api/pallets-db/${id}/pdf`);
+      if (!res.ok) throw new Error("Error al generar PDF");
+
+      // Convertir la respuesta a blob
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Crear un enlace temporal
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pallet_${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Limpiar
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("❌ Error descargando PDF:", err);
+    }
+  };
+
   if (loading) return <p style={{ padding: 18 }}>Cargando pallet...</p>;
   if (!pallet) return <p style={{ padding: 18 }}>❌ Pallet no encontrado</p>;
 
@@ -58,6 +82,23 @@ export default function PalletDetail() {
         }}
       >
         ← Volver a Pallets
+      </button>
+
+      {/* 🧾 Botón para descargar PDF */}
+      <button
+        onClick={handleDownloadPDF}
+        style={{
+          padding: "8px 12px",
+          background: "#06b6d4",
+          color: "#fff",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+          marginBottom: "12px",
+          marginLeft: "8px",
+        }}
+      >
+        📄 Descargar PDF
       </button>
 
       <h1>Pallet #{pallet.id}</h1>
