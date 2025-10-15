@@ -74,6 +74,7 @@ function Pallets() {
                     {pallets.map((pallet) => (
                     <tr key={pallet.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
                         <td style={{ padding: "8px" }}>{pallet.id}</td>
+                        <td style={{ padding: "8px" }}>{pallet.sellto_customer_name}</td>
                         <td style={{ padding: "8px" }}>{pallet.jmteventname}</td>
                         <td style={{ padding: "8px" }}>
                         {pallet.furniture_load_date_jmt ? new Date(pallet.furniture_load_date_jmt).toLocaleString() : "-"}
