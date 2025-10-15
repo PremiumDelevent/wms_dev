@@ -321,6 +321,7 @@ export default function Orders() {
     };
 
     try {
+      // 1️⃣ Crear palet
       const res = await fetch("http://localhost:4000/api/set-pallets-db", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -329,17 +330,52 @@ export default function Orders() {
 
       if (!res.ok) throw new Error("Error creando palet");
 
+      // 2️⃣ Agrupar líneas por pedido
+      const lineasPorPedido: Record<string, PalletLinea[]> = {};
+      palletLineas.forEach(l => {
+        if (!lineasPorPedido[l.orderNum]) lineasPorPedido[l.orderNum] = [];
+        lineasPorPedido[l.orderNum].push(l);
+      });
+
+      // 3️⃣ Para cada pedido, restar las cantidades y actualizar en la DB
+      for (const [orderNum, lineas] of Object.entries(lineasPorPedido)) {
+        const order = orders.find(o => o.num === orderNum);
+        if (!order) continue;
+
+        const nuevasLineas = order.lineas.map(linea => {
+          const usada = lineas.find(l => l.producto_id === linea.producto_id);
+          if (usada) {
+            return {
+              ...linea,
+              cantidad: Math.max(linea.cantidad - usada.cantidad, 0)
+            };
+          }
+          return linea;
+        });
+
+        // 4️⃣ Llamada a la API para actualizar el pedido
+        await fetch("http://localhost:4000/api/modify-order-db", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            num: orderNum,
+            lineas: nuevasLineas
+          }),
+        });
+      }
+
       setIsError(false);
-      setMensaje(`✅ Palet creado: ${evento}`);
+      setMensaje(`✅ Palet creado y pedidos actualizados: ${evento}`);
       setPalletLineas([]);
     } catch (err) {
       console.error(err);
       setIsError(true);
-      setMensaje("❌ Error creando palet");
+      setMensaje("❌ Error creando palet o actualizando pedidos");
     } finally {
       setProcesando(false);
     }
   }, [procesando, palletLineas, orders]);
+
 
   const eliminarLineaPallet = useCallback((uniqueId: string) => {
     setPalletLineas(prev => prev.filter(p => p.uniqueId !== uniqueId));
@@ -555,10 +591,10 @@ export default function Orders() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", background: "grey" }}>
               <thead>
-                <tr style={{ background: "#f3f4f6", borderBottom: "2px solid #e5e7eb" }}>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Número</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Cliente</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Evento</th>
+                <tr style={{ background: "grey", borderBottom: "2px solid #e5e7eb" }}>
+                  <th style={{ padding: "12px", textAlign: "center" }}>Número</th>
+                  <th style={{ padding: "12px", textAlign: "center" }}>Cliente</th>
+                  <th style={{ padding: "12px", textAlign: "center" }}>Evento</th>
                   <th style={{ padding: "12px", textAlign: "center" }}>Fecha carga</th>
                   <th style={{ padding: "12px", textAlign: "center" }}>Estado</th>
                   <th style={{ padding: "12px", textAlign: "center" }}>Acciones</th>
