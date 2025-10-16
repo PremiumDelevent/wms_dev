@@ -2,43 +2,13 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 // =======================
-// Tipos
+// Types
 // =======================
-interface Linea {
-  producto_id: string | null;
-  descripcion: string;
-  cantidad: number;
-}
-
-interface Order {
-  id: number;
-  num: string;
-  sellto_customer_name: string;
-  furniture_load_date_jmt: string | null;
-  jmt_status: string;
-  jmteventname: string;
-  lineas: Linea[];
-}
-
-interface PalletLinea {
-  producto_id: string | null;
-  descripcion: string;
-  cantidad: number;
-  orderNum: string;
-  uniqueId: string;
-}
-
-// =======================
-// LineaItem - Memoizado
-// =======================
-interface LineaItemProps {
-  linea: Linea;
-  index: number;
-  cantidad: number;
-  setCantidad: (idx: number, n: number) => void;
-  checked: boolean;
-  toggleCheck: (idx: number) => void;
-}
+import type { Linea } from "./types/Linea";
+import type { Order } from "./types/Order";
+import type { PalletLinea } from "./types/PalletLinea";
+import type { LineaItemProps } from "./types/LineaItemProps";
+import type { OrderPopupProps } from "./types/OrderPopupProps";
 
 const LineaItem = ({ linea, index, cantidad, setCantidad, checked, toggleCheck }: LineaItemProps) => {
   return (
@@ -71,15 +41,6 @@ const LineaItem = ({ linea, index, cantidad, setCantidad, checked, toggleCheck }
     </li>
   );
 };
-
-// =======================
-// OrderPopup
-// =======================
-interface OrderPopupProps {
-  order: Order | null;
-  onClose: () => void;
-  addToPallet: (lineas: Linea[], cantidades: number[], orderNum: string) => void;
-}
 
 function OrderPopup({ order, onClose, addToPallet }: OrderPopupProps) {
   const [mensaje, setMensaje] = useState<string | null>(null);
