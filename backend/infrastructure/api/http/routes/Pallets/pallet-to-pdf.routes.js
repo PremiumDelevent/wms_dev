@@ -16,17 +16,18 @@ function createPalletPdfRouter({ pool }) {
     const { id } = req.params;
 
     try {
-      // 1️⃣ Obtener pallet de la base de datos
+
+      // Obtener pallet de la base de datos
       const pallet = await listOnePalletUseCase.execute(id);
       if (!pallet) {
         return res.status(404).json({ error: "Pallet no encontrado" });
       }
 
-      // 2️⃣ Generar código QR con la URL correcta
+      // Generar código QR con la URL correcta
       const url = `http://localhost:5173/pallet/${id}`;
       const qrDataURL = await QRCode.toDataURL(url);
 
-      // 3️⃣ Crear documento PDF
+      // Crear documento PDF
       const doc = new PDFDocument({ margin: 50 });
 
       // Configurar cabeceras para forzar descarga
@@ -36,7 +37,7 @@ function createPalletPdfRouter({ pool }) {
         `attachment; filename="pallet_${id}.pdf"`
       );
 
-      // 4️⃣ Enlazar PDF directamente a la respuesta
+      // Enlazar PDF directamente a la respuesta
       doc.pipe(res);
 
       // 🧭 Insertar QR en la esquina superior derecha
@@ -48,24 +49,28 @@ function createPalletPdfRouter({ pool }) {
 
       doc.image(qrDataURL, qrX, qrY, { fit: [qrSize, qrSize] });
 
-      // 5️⃣ Título y cabecera
-      doc.fontSize(20).text("📦 Pallet Details", margin, margin, {
+      // Logo Premium
+      doc.image("../frontend/public/logo_premium.png", margin, margin, { fit: [100, 100] });
+
+      // Desplazar el título hacia abajo
+      const titleY = margin + 50;
+      doc.fontSize(20).text(`Pallet ${pallet.id} - A Preparar`, margin, titleY, {
         align: "left",
       });
 
-      doc.moveDown(3);
+      // Info pallet
+      doc.moveDown(2);
 
-      doc.fontSize(12).text(`ID: ${pallet.id}`);
-      doc.text(`Cliente: ${pallet.sellto_customer_name}`);
-      doc.text(`Fecha de carga: ${pallet.furniture_load_date_jmt}`);
-      doc.text(`Evento: ${pallet.jmteventname}`);
-      doc.text(`Estado: ${pallet.jmt_status}`);
+      doc.fontSize(12).text(`Cliente: ${pallet.sellto_customer_name}`);
+      doc.fontSize(12).text(`Fecha de carga: ${pallet.furniture_load_date_jmt}`);
+      doc.fontSize(12).text(`Evento: ${pallet.jmteventname}`);
       doc.moveDown();
 
+      // Líneas del pallet
       doc.fontSize(14).text("Líneas del pallet:", { underline: true });
       doc.moveDown();
 
-      // 6️⃣ Mostrar líneas
+      // Mostrar líneas
       if (pallet.lineas && Array.isArray(pallet.lineas)) {
         pallet.lineas.forEach((linea, index) => {
           doc.fontSize(12).text(
@@ -82,7 +87,7 @@ function createPalletPdfRouter({ pool }) {
         align: "right",
       });
 
-      // 7️⃣ Finalizar PDF
+      // Finalizar PDF
       doc.end();
     } catch (error) {
       console.error("❌ Error generando PDF del pallet:", error);
