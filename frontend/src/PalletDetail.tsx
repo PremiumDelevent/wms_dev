@@ -6,15 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 // =======================
 import type { Pallet } from "./types/Pallet";
 import type { Linea } from "./types/Linea";
-
-interface LineaItemProps {
-  linea: Linea;
-  index: number;
-  cantidad: number;
-  setCantidad: (idx: number, valor: number) => void;
-  checked: boolean;
-  toggleCheck: (idx: number) => void;
-}
+import type { LineaItemProps } from "./types/LineaItemProps";
+import type { PreparadoPopupProps } from "./types/PreparadoPopupProps";
 
 const LineaItem = ({ linea, index, cantidad, setCantidad, checked, toggleCheck }: LineaItemProps) => {
   return (
@@ -49,12 +42,6 @@ const LineaItem = ({ linea, index, cantidad, setCantidad, checked, toggleCheck }
     </li>
   );
 };
-
-interface PreparadoPopupProps {
-  pallet: Pallet;
-  onClose: () => void;
-  onConfirm: (lineasVerificadas: Linea[], cantidades: number[]) => void;
-}
 
 function PreparadoPopup({ pallet, onClose, onConfirm }: PreparadoPopupProps) {
   const [mensaje, setMensaje] = useState<string | null>(null);
