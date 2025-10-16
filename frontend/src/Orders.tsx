@@ -25,15 +25,17 @@ const LineaItem = ({ linea, index, cantidad, setCantidad, checked, toggleCheck }
 
       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
         <button
+          disabled={cantidad <= 0}
           onClick={() => setCantidad(index, Math.max(cantidad - 1, 0))}
-          style={{ padding: "4px 8px", cursor: "pointer" }}
+          style={{ padding: "4px 8px", cursor: "pointer", backgroundColor: "#db0f0f" }}
         >
           -
         </button>
         <div style={{ minWidth: "28px", textAlign: "center" }}>{cantidad}</div>
         <button
+          disabled={cantidad >= linea.cantidad}
           onClick={() => setCantidad(index, cantidad + 1)}
-          style={{ padding: "4px 8px", cursor: "pointer" }}
+          style={{ padding: "4px 8px", cursor: "pointer", backgroundColor: "#10c765"}}
         >
           +
         </button>
@@ -282,7 +284,7 @@ export default function Orders() {
     };
 
     try {
-      // 1️⃣ Crear palet
+      // Crear palet
       const res = await fetch("http://localhost:4000/api/set-pallets-db", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -291,14 +293,14 @@ export default function Orders() {
 
       if (!res.ok) throw new Error("Error creando palet");
 
-      // 2️⃣ Agrupar líneas por pedido
+      // Agrupar líneas por pedido
       const lineasPorPedido: Record<string, PalletLinea[]> = {};
       palletLineas.forEach(l => {
         if (!lineasPorPedido[l.orderNum]) lineasPorPedido[l.orderNum] = [];
         lineasPorPedido[l.orderNum].push(l);
       });
 
-      // 3️⃣ Para cada pedido, restar las cantidades y actualizar en la DB
+      // Para cada pedido, restar las cantidades y actualizar en la DB
       for (const [orderNum, lineas] of Object.entries(lineasPorPedido)) {
         const order = orders.find(o => o.num === orderNum);
         if (!order) continue;
@@ -314,7 +316,7 @@ export default function Orders() {
           return linea;
         });
 
-        // 4️⃣ Llamada a la API para actualizar el pedido
+        // Llamada a la API para actualizar el pedido
         await fetch("http://localhost:4000/api/modify-order-db", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -405,7 +407,6 @@ export default function Orders() {
       <div style={{ 
         marginBottom: "20px", 
         padding: "15px", 
-        background: "grey", 
         borderRadius: "8px",
         border: "2px solid #e5e7eb"
       }}>
@@ -462,7 +463,7 @@ export default function Orders() {
             fontWeight: "bold"
           }}
         >
-          {procesando ? "Procesando..." : "🚀 Crear palet global"}
+          {procesando ? "Procesando..." : "Crear palet global"}
         </button>
       </div>
 
@@ -550,9 +551,9 @@ export default function Orders() {
       ) : (
         <>
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", background: "grey" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "grey", borderBottom: "2px solid #e5e7eb" }}>
+                <tr style={{ borderBottom: "1px solid #e5e7eb" }}>
                   <th style={{ padding: "12px", textAlign: "center" }}>Número</th>
                   <th style={{ padding: "12px", textAlign: "center" }}>Cliente</th>
                   <th style={{ padding: "12px", textAlign: "center" }}>Evento</th>
@@ -575,7 +576,7 @@ export default function Orders() {
                     <td style={{ padding: "10px", textAlign: "center" }}>
                       <span style={{
                         padding: "4px 8px",
-                        background: "#dbeafe",
+                        background: "#10c765",
                         borderRadius: "4px",
                         fontSize: "12px",
                         fontWeight: "bold"
