@@ -1,20 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-interface Linea {
-  producto_id: string | null;
-  descripcion: string;
-  cantidad: number;
-}
-
-interface Pallet {
-  id: number;
-  sellto_customer_name: string;
-  furniture_load_date_jmt: string | null;
-  jmt_status: string;
-  jmteventname: string;
-  lineas: Linea[];
-}
+// =======================
+// Types
+// =======================
+import type { Pallet } from "./types/Pallet";
 
 export default function PalletDetail() {
   const { id } = useParams<{ id: string }>();
