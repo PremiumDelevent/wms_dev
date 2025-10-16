@@ -1,18 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  stock: number;
-}
-
-interface ProductPopupProps {
-  product: Product | null;
-  title: string;
-  typeAction: "ship" | "return";
-  onClose: () => void;
-}
+// =======================
+// Types
+// =======================
+import type { Product } from "./types/Product";
+import type { ProductPopupProps } from "./types/ProductPopupProps";
 
 function ProductPopup({ product, title, typeAction, onClose }: ProductPopupProps) {
   const [cantidad, setCantidad] = useState<number>(1);
