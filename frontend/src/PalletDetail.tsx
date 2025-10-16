@@ -177,7 +177,7 @@ function PreparadoPopup({ pallet, onClose, onConfirm }: PreparadoPopupProps) {
               fontWeight: "bold"
             }}
           >
-            ✅ Verificar y Decrementar Stock
+            ✅ Pallet preparado
           </button>
 
           <button
@@ -339,7 +339,7 @@ export default function PalletDetail() {
           fontWeight: "bold"
         }}
       >
-        ✅ Verificar y Decrementar Stock
+        ✅ Pallet Preparado
       </button>
 
       {mensaje && (
