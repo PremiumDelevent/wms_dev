@@ -463,7 +463,7 @@ export default function Orders() {
             fontWeight: "bold"
           }}
         >
-          {procesando ? "Procesando..." : "Crear palet global"}
+          {procesando ? "Procesando..." : "🚀 Crear palet global"}
         </button>
       </div>
 
