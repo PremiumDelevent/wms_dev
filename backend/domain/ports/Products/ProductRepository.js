@@ -14,6 +14,11 @@ class ProductRepository {
       throw new Error("Not implemented");
     }
 
+    // items: [{ productId, qty }]
+    async bulkIncreaseAvailable(items) {
+      throw new Error("Not implemented");
+    }
+
     async save(product) {
       throw new Error("Not implemented");
     }

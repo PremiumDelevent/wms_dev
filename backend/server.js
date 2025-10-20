@@ -18,6 +18,7 @@ const createOrdersRouter = require("./infrastructure/api/http/routes/Orders/orde
 const createModifyOrderRouter = require("./infrastructure/api/http/routes/Orders/modify-order.routes");
 const createIncreaseStockRouter = require("./infrastructure/api/http/routes/Products/increase-stock.routes");
 const createDecreaseStockRouter = require("./infrastructure/api/http/routes/Products/decrease-stock.routes");
+const createIncreaseAvailableRouter = require("./infrastructure/api/http/routes/Products/increase-available.routes");
 const createShipStatusRouter = require("./infrastructure/api/http/routes/Orders/ship-status.routes");
 const createReturnStatusRouter = require("./infrastructure/api/http/routes/Orders/return-status.routes");
 const createIncidentStatusRouter = require("./infrastructure/api/http/routes/Orders/incident-status.routes");
@@ -97,6 +98,9 @@ app.use("/api", createIncreaseStockRouter({ pool }));
 
 // Router hexagonal /api/decrease-stock
 app.use("/api", createDecreaseStockRouter({ pool }));
+
+// Router hexagonal /api/increase-available
+app.use("/api", createIncreaseAvailableRouter({ pool }));
 
 // Router hexagonal /api/ship-status
 app.use("/api", createShipStatusRouter({ pool }));
