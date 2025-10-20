@@ -15,38 +15,42 @@ function ProductPopup({ product, title, typeAction, onClose }: ProductPopupProps
 
   const actualizarStock = async () => {
     try {
-      const endpoint =
+      const stockEndpoint =
         typeAction === "ship"
-          ? "http://localhost:4000/api/decrease-stock"     // disminuir stock
-          : "http://localhost:4000/api/increase-stock"; // aumentar stock
+          ? "http://localhost:4000/api/decrease-stock"
+          : "http://localhost:4000/api/increase-stock";
 
-      const res = await fetch(endpoint, {
+      const availableEndpoint =
+        typeAction === "ship"
+          ? "http://localhost:4000/api/decrease-available"
+          : "http://localhost:4000/api/increase-available";
+
+      // 1️⃣ Actualizar stock
+      await fetch(stockEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId: null,
-          productos: [
-            {
-              producto_id: product.id,
-              descripcion: product.name,
-              cantidad,
-            },
-          ],
+          productos: [{ producto_id: product.id, descripcion: product.name, cantidad }],
         }),
       });
 
-      const data = await res.json().catch(() => null);
-      setIsError(!res.ok);
-      setMensaje(
-        data?.message ||
-          (res.ok
-            ? "✅ Stock actualizado correctamente"
-            : "❌ Error actualizando stock")
-      );
+      // 2️⃣ Actualizar available
+      await fetch(availableEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: null,
+          productos: [{ producto_id: product.id, descripcion: product.name, cantidad }],
+        }),
+      });
+
+      setIsError(false);
+      setMensaje("✅ Stock y available actualizados correctamente");
     } catch (err) {
-      console.error("❌ Error actualizando stock:", err);
+      console.error("❌ Error actualizando stock/available:", err);
       setIsError(true);
-      setMensaje("❌ Error actualizando stock");
+      setMensaje("❌ Error actualizando stock/available");
     }
   };
 
