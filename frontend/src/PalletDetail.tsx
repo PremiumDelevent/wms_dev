@@ -255,18 +255,18 @@ export default function PalletDetail() {
       }));
 
       // Llamar a la API de decrease-stock
-      const res = await fetch(`http://localhost:4000/api/decrease-stock`, {
+      const res = await fetch(`http://localhost:4000/api/decrease-available`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productos }),
       });
 
-      if (!res.ok) throw new Error("Error al decrementar el stock");
+      if (!res.ok) throw new Error("Error al decrementar el disponible");
 
       const result = await res.json();
 
       setIsError(false);
-      setMensaje(`✅ ${result.message || "Stock actualizado correctamente"}`);
+      setMensaje(`✅ ${result.message || "Disponible actualizado correctamente"}`);
 
       handleDownloadPDFPrepared(cantidades);
 
@@ -282,7 +282,7 @@ export default function PalletDetail() {
     } catch (err) {
       console.error("❌ Error:", err);
       setIsError(true);
-      setMensaje("❌ Error al decrementar el stock");
+      setMensaje("❌ Error al decrementar el disponible");
     }
   };
 
