@@ -261,6 +261,7 @@ function Stock() {
               <th>Name</th>
               <th>Category</th>
               <th>Stock</th>
+              <th>Available</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -271,6 +272,7 @@ function Stock() {
                 <td>{product.name}</td>
                 <td>{product.category}</td>
                 <td>{product.stock}</td>
+                <td>{product.available}</td>
                 <td>
                   <button onClick={() => openPopup(product, "➕ Aumentar stock", "return")}>
                     Aumentar stock

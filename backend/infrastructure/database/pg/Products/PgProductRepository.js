@@ -10,7 +10,7 @@ class PgProductRepository extends ProductRepository {
   async listAll() {
 
     const { rows } = await this.pool.query(
-      "SELECT id, name, category, stock FROM products ORDER BY id ASC"
+      "SELECT id, name, category, stock, available FROM products ORDER BY id ASC"
     );
     
     return rows.map(
@@ -20,6 +20,7 @@ class PgProductRepository extends ProductRepository {
           name: r.name,
           category: r.category,
           stock: r.stock,
+          available: r.available,
         })
     );
   }
@@ -126,11 +127,11 @@ class PgProductRepository extends ProductRepository {
 
   async save(product) {
     await this.pool.query(
-      `INSERT INTO products (id, name, category, stock)
-      VALUES ($1, $2, $3, $4)
+      `INSERT INTO products (id, name, category, stock, available)
+      VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT (id)
       DO UPDATE SET name = EXCLUDED.name, category = EXCLUDED.category`,
-      [product.id, product.name, product.category, 0]
+      [product.id, product.name, product.category, 0, 0]
     );
   }
 }
