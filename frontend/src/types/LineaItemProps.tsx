@@ -5,6 +5,4 @@ export interface LineaItemProps {
   index: number;
   cantidad: number;
   setCantidad: (idx: number, n: number) => void;
-  checked: boolean;
-  toggleCheck: (idx: number) => void;
 }

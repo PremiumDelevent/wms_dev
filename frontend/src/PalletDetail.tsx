@@ -9,14 +9,9 @@ import type { Linea } from "./types/Linea";
 import type { LineaItemProps } from "./types/LineaItemProps";
 import type { PreparadoPopupProps } from "./types/PreparadoPopupProps";
 
-const LineaItem = ({ linea, index, cantidad, setCantidad, checked, toggleCheck }: LineaItemProps) => {
+const LineaItem = ({ linea, index, cantidad, setCantidad }: LineaItemProps) => {
   return (
     <li style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-      <input 
-        type="checkbox" 
-        checked={checked} 
-        onChange={() => toggleCheck(index)} 
-      />
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: "14px" }}>{linea.producto_id ?? "SIN_ID"} — {linea.descripcion}</div>
         <div style={{ fontSize: "12px", color: "#666" }}>Cantidad: {linea.cantidad}</div>
@@ -47,12 +42,10 @@ function PreparadoPopup({ pallet, onClose, onConfirm }: PreparadoPopupProps) {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [isError, setIsError] = useState<boolean>(false);
   const [cantidades, setCantidades] = useState<number[]>([]);
-  const [selected, setSelected] = useState<boolean[]>([]);
 
   useEffect(() => {
     if (pallet) {
       setCantidades(pallet.lineas.map(l => l.cantidad));
-      setSelected(pallet.lineas.map(() => false));
     }
   }, [pallet]);
 
@@ -71,30 +64,12 @@ function PreparadoPopup({ pallet, onClose, onConfirm }: PreparadoPopupProps) {
     });
   }, []);
 
-  const handleToggleCheck = useCallback((idx: number) => {
-    setSelected(prev => {
-      const copy = [...prev];
-      copy[idx] = !copy[idx];
-      return copy;
-    });
-  }, []);
-
   const handleMarcarPreparado = useCallback(() => {
-    const lineasSeleccionadas = pallet.lineas.filter((_, i) => selected[i]);
-    const cantidadesSeleccionadas = cantidades.filter((_, i) => selected[i]);
-
-    if (lineasSeleccionadas.length === 0) {
-      setIsError(true);
-      setMensaje("⚠️ Marca al menos una línea para verificar");
-      return;
-    }
-
-    onConfirm(lineasSeleccionadas, cantidadesSeleccionadas);
+    onConfirm(pallet.lineas, cantidades);
     setIsError(false);
     setMensaje("✅ Pallet marcado como preparado");
-    
     setTimeout(() => onClose(), 800);
-  }, [pallet, selected, cantidades, onConfirm, onClose]);
+  }, [pallet, cantidades, onConfirm, onClose]);
 
   return (
     <div 
@@ -132,8 +107,6 @@ function PreparadoPopup({ pallet, onClose, onConfirm }: PreparadoPopupProps) {
                 index={i}
                 cantidad={cantidades[i] ?? linea.cantidad}
                 setCantidad={handleSetCantidad}
-                checked={selected[i] ?? false}
-                toggleCheck={handleToggleCheck}
               />
             ))}
           </ul>
@@ -241,6 +214,38 @@ export default function PalletDetail() {
     }
   };
 
+  const handleDownloadPDFPrepared = async (cantidades: number[]) => {
+    try {
+      // Preparamos los datos a enviar
+      const body = {
+        cantidades: cantidades,
+      };
+
+      const res = await fetch(`http://localhost:4000/api/pallets-db/${id}/pdf-prepared`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Error al generar PDF");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pallet_${id}_preparado.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("❌ Error descargando PDF:", err);
+    }
+  };
+
+
   const handleMarcarPreparado = async (lineasVerificadas: Linea[], cantidades: number[]) => {
     try {
       // Preparar el body para decrease-stock
@@ -263,12 +268,17 @@ export default function PalletDetail() {
       setIsError(false);
       setMensaje(`✅ ${result.message || "Stock actualizado correctamente"}`);
 
+      handleDownloadPDFPrepared(cantidades);
+
       // Recargar el pallet para ver los cambios
       const updatedRes = await fetch(`http://localhost:4000/api/pallets-db/${id}`);
       if (updatedRes.ok) {
         const data: Pallet = await updatedRes.json();
         setPallet(data);
       }
+
+      
+
     } catch (err) {
       console.error("❌ Error:", err);
       setIsError(true);
