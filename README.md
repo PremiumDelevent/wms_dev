@@ -191,7 +191,8 @@ CREATE TABLE products (
   id VARCHAR(50) PRIMARY KEY,      -- id de Business Central
   name VARCHAR(255) NOT NULL,
   category VARCHAR(255) NOT NULL,
-  stock INT DEFAULT 0
+  stock INT DEFAULT 0,
+  available INT DEFAULT 0
 );
 
 CREATE TABLE exchanges (
