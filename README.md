@@ -1,7 +1,7 @@
 # WMS_DEV
 
 Proyecto WMS Premium Delevent  
-Stack: **React (TypeScript)** en frontend, **Node.js / Express** en backend y **PostgreSQL** como base de datos.
+Stack: **React (TypeScript)** en frontend, **Node.js / Express** en backend y **PostgreSQL** como base de datos. Logger con **winston**. Testing con **jest**.
 
 ---
 
@@ -22,6 +22,7 @@ backend/
 │       └── Exchange.js
 │       └── Product.js
 │       └── Incident.js
+│       └── Pallet.js
 │
 │   └── ports/
 │       └── Orders/
@@ -36,6 +37,8 @@ backend/
 │           └── DecreaseStockRepository.js
 │       └── Incidents/
 │           └── IncidentsRepository.js 
+│       └── Pallets/
+│           └── PalletRepository.js 
 │
 ├── application/use-cases    # Casos de uso y servicios
 │   └── Orders/
@@ -52,11 +55,17 @@ backend/
 │       └── IncreaseStockUseCase.js
 │       └── DecreaseStockUseCase.js
 │       └── SyncProductsUseCase.js
+│       └── IncreaseAvailableUseCase.js
+│       └── DecreaseAvailableUseCase.js
 │   └── Incidents/
 │       └── DeleteIncidentsUseCase.js
 │       └── ListIncidentsUseCase.js
 │       └── ModifyIncidentsUseCase.js
 │       └── SetIncidentsUseCase.js
+│   └── Pallets/
+│       └── ListPalletsUseCase.js
+│       └── ListOnePalletUseCase.js
+│       └── SetPalletsUseCase.js
 │
 ├── infrastructure/ # Adaptadores, persistencia y APIs externas
 │   └── api/http/routes
@@ -73,11 +82,19 @@ backend/
 │           └── products.routes.js
 │           └── increase-stock.routes.js
 │           └── decrease-stock.routes.js
+│           └── increase-available.routes.js
+│           └── decrease-available.routes.js
 │       └── Incidents/
 │           └── delete-incidents.routes.js
 │           └── incidents.routes.js
 │           └── modify-incidents.routes.js
 │           └── set-incidents.routes.js
+│       └── Pallets/
+│           └── pallets.routes.js
+│           └── list-one-pallet.routes.js
+│           └── set-pallets.routes.js
+│           └── pallet-prepared-to-pdf.routes.js
+│           └── pallet-to-pdf.routes.js
 │
 │   └── database/pg
 │       └── Orders/
@@ -91,6 +108,8 @@ backend/
 │           └── PgProductRepository.js
 │       └── Incidents/
 │           └── PgIncidentsRepository.js
+│       └── Pallets/
+│           └── PgPalletRepository.js
 │
 │   └── external
 │       └── BusinessCentralOrdersService.js
@@ -101,6 +120,16 @@ backend/
 │       └── OrdersSyncScheduler.js
 │       └── ExchangesSyncScheduler.js
 │       └── ProductsSyncScheduler.js
+│
+│   └── logger
+│       └── logger.js
+│       └── logs
+│           └── wms.log
+│
+├── tests
+│   └── integration
+│       └── api
+│           └── incident-status.routes.spec.js
 │
 ├── server.js       
 └── ...
@@ -145,9 +174,15 @@ Endpoints disponibles:
 
 /api/orders-db → pedidos desde PostgreSQL
 
+/api/modify-order-db → modificar pedido
+
 /api/increase-stock → subir stock
 
 /api/decrease-stock → bajar stock
+
+/api/increase-available → subir disponible
+
+/api/decrease-available → bajar disponible
 
 /api/ship-status → status pedido a ENVIADO
 
@@ -162,6 +197,16 @@ Endpoints disponibles:
 /api/delete-incidents-db → borrar incidentes
 
 /api/modify-incidents-db → modificar lineas incidentes
+
+/api/list-pallets-db → pallets desde PostgreSQL
+
+/api/list-one-pallet-db → pallet desde PostgreSQL
+
+/api/set-pallets-db → guardar pallets
+
+/api/pallets-db/:id/pdf → generar PDF de pallet
+
+/api/pallets-db/:id/pdf-prepared → generar PDF de pallet preparado
 
 ## 3️⃣ Base de datos local con Docker
 
