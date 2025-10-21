@@ -79,6 +79,29 @@ class PgOrdersRepository extends OrdersRepository {
         }
     }
 
+    async updateStatusReturn(id) {
+        const client = await this.pool.connect();
+        try {
+        await client.query("BEGIN");
+        const result = await client.query(
+            "UPDATE orders SET jmt_status = 'DEVUELTO' WHERE id = $1 RETURNING *",
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            throw new Error(`Order with id ${id} not found`);
+        }
+
+        await client.query("COMMIT");
+        return result.rows[0];
+        } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+        } finally {
+        client.release();
+        }
+    }
+
 }
 
 module.exports = PgOrdersRepository;

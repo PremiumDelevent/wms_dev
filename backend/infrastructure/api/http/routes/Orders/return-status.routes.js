@@ -1,6 +1,7 @@
 const express = require("express");
-const PgReturnStatusRepository = require("../../../../database/pg/Orders/PgReturnStatusRepository");
+const PgOrdersRepository = require("../../../../database/pg/Orders/PgOrdersRepository");
 const ReturnStatusUseCase = require("../../../../../application/use-cases/Orders/ReturnStatusUseCase");
+const logger = require("../../../../logger/logger");
 
 // POST /api/return-status
 
@@ -9,8 +10,8 @@ function createReturnStatusRouter({ pool }) {
 
   router.post("/return-status", async (req, res) => {
     try {
-      const returnStatusRepository = new PgReturnStatusRepository({ pool });
-      const useCase = new ReturnStatusUseCase({ returnStatusRepository });
+      const ordersRepository = new PgOrdersRepository({ pool });
+      const useCase = new ReturnStatusUseCase({ ordersRepository });
       const { orderId } = req.body;
 
       const result = await useCase.execute(orderId);
@@ -20,12 +21,16 @@ function createReturnStatusRouter({ pool }) {
         ...result,
       });
   } catch (err) {
-    console.error("❌ Error procesando status:", err.message);
-    res.status(500).json({
-      message: "❌ Error procesando status",
-      error: err.message,
-    });
-  }
+      if (err.message.includes("not found")) {
+        logger.debug(`Pedido no encontrado: ${err.message}`);
+      } else {
+        logger.error(`Error procesando status: ${err.message}`);
+      }
+      res.status(500).json({
+        message: "❌ Error procesando status",
+        error: err.message,
+      });
+    }
 });
 
   return router;

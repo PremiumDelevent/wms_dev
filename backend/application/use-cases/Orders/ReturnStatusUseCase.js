@@ -1,10 +1,10 @@
 class ReturnStatusUseCase {
-    constructor({ returnStatusRepository }) {
-      this.returnStatusRepository = returnStatusRepository;
+    constructor({ ordersRepository }) {
+      this.ordersRepository = ordersRepository;
     }
 
     async execute(id) {
-      return this.returnStatusRepository.updateStatus(id);
+      return this.ordersRepository.updateStatusReturn(id);
     }
 }
 
