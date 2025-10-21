@@ -27,7 +27,6 @@ backend/
 │   └── ports/
 │       └── Orders/
 │           └── OrdersRepository.js 
-│           └── IncidentStatusRepository.js 
 │           └── ShipStatusRepository.js
 │       └── Exchanges/
 │           └── ExchangeRepository.js 
@@ -99,8 +98,6 @@ backend/
 │   └── database/pg
 │       └── Orders/
 │           └── PgOrdersRepository.js
-│           └── PgIncidentStatusRepository.js
-│           └── PgReturnStatusRepository.js
 │           └── PgShipStatusRepository.js
 │       └── Exchanges/
 │           └── PgExchangesRepository.js
