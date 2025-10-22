@@ -24,6 +24,11 @@ class OrdersRepository {
   async updateStatusReturn(id) {
     throw new Error("Method not implemented");
   }
+
+  // Must update an entity Orders
+  async updateStatusShip(id) {
+    throw new Error("Method not implemented");
+  }
 }
 
 module.exports = OrdersRepository;

@@ -1,10 +1,10 @@
 class ShipStatusUseCase {
-    constructor({ shipStatusRepository }) {
-      this.shipStatusRepository = shipStatusRepository;
+    constructor({ ordersRepository }) {
+      this.ordersRepository = ordersRepository;
     }
 
     async execute(id) {
-      return this.shipStatusRepository.updateStatus(id);
+      return this.ordersRepository.updateStatusShip(id);
     }
 }
 
