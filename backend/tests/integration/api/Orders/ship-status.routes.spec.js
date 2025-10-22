@@ -1,8 +1,8 @@
 const express = require("express");
 const request = require("supertest");
 const { newDb } = require("pg-mem");
-const createShipStatusRouter = require("../../../infrastructure/api/http/routes/Orders/ship-status.routes");
-const logger = require("../../../infrastructure/logger/logger");
+const createShipStatusRouter = require("../../../../infrastructure/api/http/routes/Orders/ship-status.routes");
+const logger = require("../../../../infrastructure/logger/logger");
 
 describe("/api/ship-status", () => {
   let app, pool;

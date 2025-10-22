@@ -1,10 +1,10 @@
 const express = require("express");
 const request = require("supertest");
 const { newDb } = require("pg-mem");
-const createReturnStatusRouter = require("../../../infrastructure/api/http/routes/Orders/return-status.routes");
-const logger = require("../../../infrastructure/logger/logger");
+const createIncidentStatusRouter = require("../../../../infrastructure/api/http/routes/Orders/incident-status.routes");
+const logger = require("../../../../infrastructure/logger/logger");
 
-describe("/api/return-status", () => {
+describe("/api/incident-status", () => {
   let app, pool;
 
   beforeAll(async () => {
@@ -20,9 +20,9 @@ describe("/api/return-status", () => {
 
     app = express();
     app.use(express.json());
-    app.use("/api", createReturnStatusRouter({ pool }));
+    app.use("/api", createIncidentStatusRouter({ pool }));
 
-    logger.debug("Router de /api/return-status montado correctamente");
+    logger.debug("Router de /api/incident-status montado correctamente");
   });
 
   afterAll(async () => {
@@ -30,15 +30,15 @@ describe("/api/return-status", () => {
     await pool.end();
   });
 
-  test("✅ actualiza status a DEVUELTO y devuelve 200", async () => {
-    logger.info("Test: actualizar status a DEVUELTO");
+  test("✅ actualiza status a INCIDENCIA y devuelve 200", async () => {
+    logger.info("Test: actualizar status a INCIDENCIA");
 
     const { rows } = await pool.query("SELECT id FROM orders WHERE num='A100'");
     const orderId = rows[0].id;
     logger.debug("ID del pedido encontrado:" + orderId);
 
     const res = await request(app)
-      .post("/api/return-status")
+      .post("/api/incident-status")
       .send({ orderId })
       .expect(200);
 
@@ -47,6 +47,6 @@ describe("/api/return-status", () => {
     const { rows: updated } = await pool.query("SELECT jmt_status FROM orders WHERE id=$1", [orderId]);
     logger.debug("Estado actualizado en DB:" + updated[0].jmt_status);
 
-    expect(updated[0].jmt_status).toBe("DEVUELTO");
+    expect(updated[0].jmt_status).toBe("INCIDENCIA");
   });
 });
