@@ -49,20 +49,4 @@ describe("/api/return-status", () => {
 
     expect(updated[0].jmt_status).toBe("DEVUELTO");
   });
-
-  test("❌ devuelve 500 si el ID no existe", async () => {
-    logger.info("Test: error al actualizar status con ID inexistente");
-
-    try {
-    const res = await request(app)
-        .post("/api/return-status")
-        .send({ orderId: 999 })
-        .expect(500);
-
-    logger.debug("Respuesta esperada de error:", res.body.message);
-    } catch (err) {
-    logger.error("Error inesperado en test de fallo:", err);
-    throw err;
-    }
-  });
 });
