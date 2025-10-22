@@ -17,7 +17,7 @@ const logger = createLogger({
         info: "ℹ️",
         warn: "⚠️",
         error: "❌",
-        debug: "🐛",
+        debug: "✅",
       }[level] || "";
       return `${timestamp} ${icon} [${level.toUpperCase()}] ${message}`;
     })
