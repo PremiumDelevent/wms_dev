@@ -1,6 +1,7 @@
 const express = require("express");
 const PgIncidentsRepository = require("../../../../database/pg/Incidents/PgIncidentsRepository");
 const ModifyIncidentsUseCase = require("../../../../../application/use-cases/Incidents/ModifyIncidentsUseCase");
+const logger = require("../../../../../infrastructure/logger/logger");
 
 function createModifyIncidentsRouter({ pool }) {
   const router = express.Router();
@@ -9,15 +10,17 @@ function createModifyIncidentsRouter({ pool }) {
   const incidentsRepository = new PgIncidentsRepository({ pool });
   const modifyIncidentsUseCase = new ModifyIncidentsUseCase({ incidentsRepository });
 
-  // POST /api/set-incidents-db
+  // POST /api/modify-incidents-db
   router.post("/modify-incidents-db", async (req, res) => {
     try {
       const incidentData = req.body;
-  
       await modifyIncidentsUseCase.execute(incidentData);
-  
+
+      logger.info("✅ Incident modificado correctamente:", incidentData.num);
+      res.status(200).json({ message: "Incident modificado correctamente" });
     } catch (error) {
-      console.error("❌ Error insertando incident en BD:", error);
+      logger.error("❌ Error modificando incident en BD:", error);
+      res.status(500).json({ error: "Error modificando incident en BD" });
     }
   });
 
