@@ -1,6 +1,7 @@
 const express = require("express");
 const PgIncidentsRepository = require("../../../../database/pg/Incidents/PgIncidentsRepository");
 const SetIncidentsUseCase = require("../../../../../application/use-cases/Incidents/SetIncidentsUseCase");
+const logger = require("../../../../../infrastructure/logger/logger");
 
 function createSetIncidentsRouter({ pool }) {
   const router = express.Router();
@@ -15,9 +16,12 @@ function createSetIncidentsRouter({ pool }) {
       const incidentData = req.body;
   
       await setIncidentsUseCase.execute(incidentData);
+
+      res.status(200).json({ message: "Incidente insertado/actualizado correctamente" });
   
     } catch (error) {
-      console.error("❌ Error insertando incident en BD:", error);
+      logger.error("❌ Error insertando incident en BD:", error);
+      res.status(500).json({ error: "Error insertando incident en BD" });
     }
   });
 
